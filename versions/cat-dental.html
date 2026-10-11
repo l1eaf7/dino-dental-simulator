@@ -1,0 +1,1199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cat Dental Surgery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: surgery lamp-lit stage with the patient's open mouth, tool tray below, clinical chart beside. Single committed dark-teal "surgery" look. */
+:root{
+  --bg:#10303a; --bg2:#0b242c; --panel:#18414c; --line:#2a5a66;
+  --ink:#eaf4f1; --muted:#93b8b3;
+  --bone:#f5f0e2; --gum:#df7487; --gum-d:#b04f63; --throat:#4a1420;
+  --lamp:#ffbe3d; --bad:#ff6a5c; --good:#7fe0a8; --numb:#8fd3ff;
+  --f-display:"Lilita One","Arial Rounded MT Bold",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:radial-gradient(120% 70% at 50% -10%,#1d4a55 0%,var(--bg) 55%,var(--bg2) 100%) fixed,var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+.wrap{max-width:1340px;margin:0 auto;padding-inline:16px;padding-block:14px 28px;display:grid;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 18px}
+h1{font-family:var(--f-display);font-weight:400;font-size:clamp(1.5rem,4vw,2.2rem);margin:0;letter-spacing:.01em;text-wrap:balance}
+h1 span{color:var(--lamp)}
+.stats{display:flex;gap:16px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.stat{display:grid;line-height:1.1}
+.stat small{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.stat b{font-family:var(--f-display);font-weight:400;font-size:1.35rem}
+.lives b{color:var(--bad);letter-spacing:.1em}
+.mute{align-self:center;display:flex;align-items:center;gap:6px;font:700 .8rem var(--f-body);color:var(--ink);background:#123540;border:2px solid var(--line);border-radius:99px;padding:6px 12px;cursor:pointer}
+.mute:hover{border-color:#4d8a96}
+.mute:focus-visible{outline:3px solid var(--lamp);outline-offset:2px}
+.mute svg{width:18px;height:18px}
+.mute[aria-pressed="true"]{border-color:var(--lamp);color:var(--lamp)}
+
+.game{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start}
+.game{grid-template-columns:230px minmax(0,1fr) 290px}
+.pixcard{display:grid;gap:8px;align-content:start}
+.pixcard canvas{display:block;width:100%;height:auto;aspect-ratio:64/88;image-rendering:pixelated;image-rendering:crisp-edges;border-radius:10px;border:3px solid #0a1d23;background:#173c46}
+.pixwrap{position:relative;min-width:0}
+.pixsay{position:absolute;left:8px;right:8px;top:8px;z-index:2;padding:7px 9px;background:#f5f0e2;color:#1a1208;font:500 .74rem/1.3 var(--f-mono);
+  border:2px solid #1a1208;box-shadow:2px 2px 0 #1a1208, inset -2px -2px 0 #d8d0b8;text-wrap:balance;
+  opacity:0;transform:translateY(-4px);transition:opacity .15s,transform .15s;pointer-events:none}
+.pixsay::after{content:"";position:absolute;left:22px;bottom:-9px;width:10px;height:8px;background:#f5f0e2;border:2px solid #1a1208;border-top:0;border-right:0;transform:skewX(30deg)}
+.pixsay.show{opacity:1;transform:none}
+.pixsay.bad{background:#ffe1dc;color:#7a1410}
+.pixsay.bad::after{background:#ffe1dc}
+.gearbox{display:grid;gap:6px;border-top:1px solid var(--line);padding-top:10px}
+.gear-h{margin:0;display:flex;justify-content:space-between;font:500 .68rem var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.gear{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.g{position:relative;display:grid;place-items:center;aspect-ratio:1;max-width:100%;border-radius:10px;border:1px dashed var(--line);color:var(--muted);background:rgba(0,0,0,.15)}
+.g svg{width:58%;height:58%;opacity:.35}
+.g.on{border:1px solid var(--lamp);color:var(--lamp);background:#0f2c35}
+.g.on svg{opacity:1}
+.g .gl{position:absolute;right:3px;bottom:1px;font:500 .58rem var(--f-mono);color:var(--good)}
+.g.flash{animation:bought .6s}
+.g:hover::after,.g:focus-visible::after{content:attr(data-tip);position:absolute;z-index:20;left:0;top:calc(100% + 4px);width:170px;padding:7px 9px;border-radius:8px;background:#0b242c;border:1px solid var(--lamp);color:var(--ink);font:400 .74rem/1.35 var(--f-body);white-space:normal;box-shadow:0 8px 20px rgba(0,0,0,.4)}
+.g:nth-child(4n)::after,.g:nth-child(4n-1)::after{left:auto;right:0}
+.g:focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
+.rep{display:grid;gap:5px;border-top:1px solid var(--line);padding-top:10px}
+.rep-h,.rep-f{margin:0;display:flex;justify-content:space-between;align-items:baseline;gap:8px;font:500 .7rem var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+.rep-h b{color:var(--lamp);font-weight:500}
+.bar.rep-bar{height:10px;position:relative}
+.bar.rep-bar::after{content:"";position:absolute;left:calc(50% - 1px);top:0;bottom:0;width:2px;background:var(--muted);opacity:.7}
+.bar.rep-bar i{position:absolute;top:0;bottom:0;border-radius:0;background:linear-gradient(90deg,#e8a020,#ffd36b);transition:width .4s ease,left .4s ease}
+.bar.rep-bar.neg i{background:linear-gradient(90deg,#c8392b,var(--bad))}
+.rep-h b.neg{color:var(--bad)}
+.rep{position:relative}
+.rep-h{justify-content:flex-start !important;align-items:center !important}
+.rep-h b{flex:1;min-width:0}
+.rep-next{margin:0;font:500 .68rem var(--f-mono);color:var(--muted)}
+.lvl-badge{font-family:var(--f-display);font-size:.8rem;letter-spacing:.04em;color:#2a1a05;background:var(--lamp);padding:2px 7px;border-radius:6px;text-transform:none}
+.lvl-badge.neg{background:var(--bad);color:#fff}
+#repTotal{color:var(--muted)}
+.rep-f{text-transform:none !important;letter-spacing:.02em !important}
+.rep-f span:first-child{font-variant-numeric:tabular-nums;color:var(--ink)}
+.bar.rep-bar{height:14px;border-radius:4px;border:2px solid #0a1d23}
+.bar.rep-bar::after{left:0 !important;width:100% !important;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),rgba(10,29,35,.85) calc(10% - 2px) 10%) !important;opacity:1 !important}
+.bar.rep-bar i{left:0 !important;border-radius:2px 0 0 2px}
+.lvlup{position:absolute;left:50%;top:-6px;transform:translate(-50%,0);font-family:var(--f-display);font-size:1.05rem;white-space:nowrap;pointer-events:none;opacity:0;text-shadow:0 2px 0 rgba(0,0,0,.45)}
+.lvlup.up{color:var(--lamp);animation:lvlPop 1.8s ease-out}
+.lvlup.down{color:var(--bad);animation:lvlPop 1.8s ease-out}
+@keyframes lvlPop{0%{opacity:0;transform:translate(-50%,8px) scale(.8)}15%{opacity:1;transform:translate(-50%,0) scale(1.1)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-14px)}}
+.bar.rep-bar.gain i{animation:repGain .9s}
+.bar.rep-bar.loss i{animation:repLoss .9s}
+@keyframes repLoss{30%{background:var(--bad);box-shadow:0 0 10px var(--bad)}}
+@keyframes repGain{30%{filter:brightness(1.6);box-shadow:0 0 10px #ffd36b}}
+.stars{font-size:.95rem;letter-spacing:.12em;color:#3a5a62;background:linear-gradient(90deg,var(--lamp) var(--sp,0%),#3a5a62 var(--sp,0%));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.rep-f span:last-child{font-variant-numeric:tabular-nums}
+.mood{margin:0;font:500 .78rem var(--f-mono);color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.mood b{color:var(--lamp);font-weight:500}
+@media (max-width:1140px){
+  .game{grid-template-columns:minmax(0,1fr) 290px}
+  .pixcard{grid-column:1/-1;grid-template-columns:auto minmax(0,1fr);align-items:center}
+  .pixcard h2{grid-column:1/-1}
+  .pixcard .pixwrap{grid-row:2/span 2}
+  .pixcard .mood,.pixcard .rep{grid-column:2}
+  .pixcard canvas{width:auto;height:200px}
+}
+@media (max-width:820px){.game{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:480px){.pixcard{grid-template-columns:minmax(0,1fr)}.pixcard canvas{margin-inline:auto;height:220px}
+  .pixcard .pixwrap{grid-row:auto}.pixcard .mood,.pixcard .rep{grid-column:1}}
+
+/* ---------- Stage ---------- */
+.stage{position:relative;border-radius:22px;background:linear-gradient(180deg,#235561,#173c46);border:1px solid var(--line);padding:16px;overflow:hidden;min-width:0}
+.stage::before{content:"";position:absolute;inset:-30% 20% auto 20%;height:70%;background:radial-gradient(closest-side,rgba(255,214,120,.22),transparent);pointer-events:none}
+.patient-bar{position:relative;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.who{display:grid}
+.who b{font-family:var(--f-display);font-weight:400;font-size:1.3rem}
+.who small{color:var(--muted);font-size:.8rem}
+.meters{display:grid;gap:6px;min-width:200px;flex:1;max-width:340px}
+.meter{display:grid;grid-template-columns:86px 1fr;gap:8px;align-items:center;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.bar{height:12px;border-radius:99px;background:#0c2229;overflow:hidden;border:1px solid #0a1d23}
+.bar i{display:block;height:100%;width:100%;border-radius:inherit;background:linear-gradient(90deg,var(--good),#c8f07a);transition:width .12s linear}
+.bar.low i{background:linear-gradient(90deg,var(--bad),var(--lamp))}
+.clock{font:500 .78rem var(--f-mono);color:var(--bad);text-transform:none;letter-spacing:0;font-variant-numeric:tabular-nums}
+.bar.numb i{background:linear-gradient(90deg,#5bb6f0,var(--numb))}
+
+/* the head */
+.head{position:relative;margin:6px auto 0;width:min(100%,640px);border-radius:46% 54% 36% 40% / 40% 44% 30% 34%;padding:62px 7% 46px;background:
+  radial-gradient(circle at 20% 30%,rgba(0,0,0,.12) 0 6px,transparent 7px) 0 0/34px 30px,
+  radial-gradient(circle at 70% 70%,rgba(255,255,255,.07) 0 5px,transparent 6px) 0 0/26px 28px,
+  linear-gradient(170deg,var(--skin),var(--skin2));
+  box-shadow:inset 0 -14px 0 rgba(0,0,0,.14),0 18px 40px rgba(0,0,0,.35);transition:transform .1s}
+.head.shake{animation:shake .35s}
+@keyframes shake{20%{transform:translate(-7px,2px) rotate(-1deg)}40%{transform:translate(6px,-2px) rotate(1deg)}60%{transform:translate(-4px,1px)}80%{transform:translate(3px,0)}}
+.head{margin-top:34px}
+.deco{position:absolute;pointer-events:none}
+.deco::before,.deco::after{content:"";position:absolute}
+/* Rexy: dark tiger stripes and little brow horns */
+.sp-rex .deco{top:0;left:6%;width:58%;height:54px;border-radius:40px 40px 0 0;background:repeating-linear-gradient(100deg,transparent 0 26px,rgba(20,40,5,.35) 26px 38px)}
+.sp-rex .deco::before{top:-14px;left:calc(100% + 4%);width:26px;height:20px;background:#b5512c;clip-path:polygon(0 100%,40% 0,100% 100%)}
+/* Trudy: big spotted frill with three horns */
+.sp-tri .deco{top:-40px;right:2%;width:46%;height:70px;border-radius:50% 50% 12px 12px;background:radial-gradient(circle at 20% 40%,#f2c04a 0 7px,transparent 8px),radial-gradient(circle at 50% 25%,#f2c04a 0 7px,transparent 8px),radial-gradient(circle at 80% 40%,#f2c04a 0 7px,transparent 8px),linear-gradient(var(--skin2),var(--skin2));box-shadow:inset 0 -10px 0 rgba(0,0,0,.15)}
+.sp-tri .deco::before{top:-26px;left:18%;width:16px;height:52px;background:#f5f0e2;clip-path:polygon(50% 0,100% 100%,0 100%);transform:rotate(-14deg)}
+.sp-tri .deco::after{top:-26px;right:30%;width:16px;height:52px;background:#f5f0e2;clip-path:polygon(50% 0,100% 100%,0 100%);transform:rotate(10deg)}
+.sp-tri .nostril{display:none}
+.sp-tri .head-beak{display:block}
+/* Velma: red feather crest and blue stripes */
+.sp-vel .deco{top:-24px;right:10%;width:120px;height:36px;background:linear-gradient(#ff7a4a,#c8392b);clip-path:polygon(0 100%,10% 20%,22% 80%,34% 0,46% 75%,60% 10%,72% 78%,86% 25%,100% 100%)}
+.sp-vel .deco::before{top:44px;left:-160%;width:280%;height:16px;background:repeating-linear-gradient(90deg,rgba(15,30,60,.35) 0 10px,transparent 10px 30px);border-radius:8px}
+/* Steggy: row of orange plates */
+.sp-steg .deco{top:-30px;left:18%;width:62%;height:40px;background:linear-gradient(#ffb04a,#d96c28);clip-path:polygon(0 100%,8% 30%,16% 100%,24% 10%,34% 100%,44% 0,56% 100%,66% 10%,76% 100%,84% 30%,92% 100%)}
+/* Brian: domed nasal crest and pale spots */
+.sp-brach .deco{inset:0;border-radius:inherit;background:radial-gradient(circle at 18% 20%,rgba(255,255,255,.16) 0 10px,transparent 11px) 0 0/90px 70px}
+.sp-brach .deco::before{top:-20px;left:16%;width:110px;height:56px;border-radius:55px 55px 10px 10px;background:linear-gradient(var(--skin),var(--skin2));box-shadow:inset 0 6px 0 rgba(255,255,255,.12)}
+.head-beak{display:none;position:absolute;left:-14px;top:50px;width:42px;height:40px;background:#4a3420;clip-path:polygon(100% 0,0 45%,100% 100%)}
+.eye{position:absolute;top:14px;right:16%;width:46px;height:46px;border-radius:50%;background:var(--eyebg,#fff6d8);z-index:1;box-shadow:inset 0 -4px 0 rgba(0,0,0,.12)}
+.eye::after{content:"";position:absolute;width:18px;height:22px;border-radius:50%;background:#1a1208;left:var(--px,14px);top:12px;transition:left .3s}
+.brow{position:absolute;top:4px;right:calc(16% - 6px);width:60px;height:12px;border-radius:8px;background:var(--skin2);transform:rotate(var(--brow,0deg));transform-origin:center;transition:transform .25s;filter:brightness(.8)}
+.nostril{position:absolute;top:22px;left:10%;width:16px;height:9px;border-radius:50%;background:rgba(0,0,0,.35)}
+.nostril+.nostril{left:calc(10% + 26px)}
+
+.bubble{position:absolute;top:-4px;left:50%;transform:translateX(-50%);background:var(--bone);color:#2a1a10;font-weight:700;padding:6px 14px;border-radius:14px;font-size:.92rem;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis;box-shadow:0 4px 0 rgba(0,0,0,.2);transition:opacity .2s;z-index:3}
+.bubble.pain{background:var(--bad);color:#fff;font-family:var(--f-display);font-weight:400;font-size:1.1rem}
+
+.mouth{position:relative;border-radius:30px;background:radial-gradient(ellipse at 50% 55%,#7a2433,var(--throat) 70%);box-shadow:inset 0 8px 20px rgba(0,0,0,.5);overflow:visible}
+.mouth .tongue{position:absolute;left:22%;right:22%;bottom:22px;height:30%;max-height:70px;border-radius:50% 50% 30% 30%;background:linear-gradient(#e06b80,#b9475e);opacity:.9}
+.jaw{position:relative;z-index:1}
+.gum{background:linear-gradient(var(--gum),var(--gum-d));height:22px;border-radius:14px}
+.upper .gum{border-radius:16px 16px 10px 10px}
+.lower .gum{border-radius:10px 10px 16px 16px;background:linear-gradient(var(--gum-d),var(--gum))}
+.teeth{display:flex;justify-content:center;gap:clamp(3px,1vw,8px);padding-inline:6px}
+.upper .teeth{align-items:flex-start;margin-top:-4px}
+.lower .teeth{align-items:flex-end;margin-bottom:-4px}
+.gap{height:var(--open,150px);transition:height .25s ease}
+.gap.snap{transition:height .08s ease-in}
+
+.tooth{position:relative;flex:1 1 0;max-width:62px;min-width:0;height:var(--th,64px);border:0;padding:0;cursor:pointer;background:transparent;-webkit-tap-highlight-color:transparent}
+.tooth .t{position:absolute;inset:0;background:var(--bone);transition:background .15s,transform .12s}
+.tooth:hover .t{transform:scale(1.06)}
+.tooth:focus-visible{outline:3px solid var(--lamp);outline-offset:3px;border-radius:6px}
+.fang.up .t{clip-path:polygon(0 0,100% 0,62% 100%,38% 100%)}
+.fang.dn .t{clip-path:polygon(38% 0,62% 0,100% 100%,0 100%)}
+.leaf.up .t{clip-path:polygon(0 0,100% 0,100% 55%,50% 100%,0 55%)}
+.leaf.dn .t{clip-path:polygon(50% 0,100% 45%,100% 100%,0 100%,0 45%)}
+.peg .t{border-radius:8px 8px 45% 45%}
+.peg.dn .t{border-radius:45% 45% 8px 8px}
+.tooth .t::after{content:"";position:absolute;left:50%;top:var(--spot,30%);width:38%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:transparent}
+.dn .t::after{--spot:70%}
+
+.s-plaque .t{background:radial-gradient(circle at 30% 30%,#b89a3a 0 3px,transparent 4px) 0 0/10px 11px,radial-gradient(circle at 70% 60%,#9c8126 0 2px,transparent 3px) 0 0/9px 8px,#e3cf7e}
+.s-cavity .t::after{background:radial-gradient(#140c08 40%,#4a3420)}
+.s-drilled .t::after{background:radial-gradient(#5d5f66 30%,#9b9da6);box-shadow:inset 0 0 0 2px #3b3c42}
+.s-filled .t::after{background:radial-gradient(circle at 35% 35%,#ffffff,#c9ced8 45%,#8d94a3)}
+.s-rotten .t{background:
+  radial-gradient(circle at 28% 34%,rgba(170,190,90,.95) 0 3px,rgba(140,160,70,.6) 5px,transparent 8px),
+  radial-gradient(circle at 70% 58%,rgba(160,180,80,.9) 0 2px,rgba(120,140,60,.55) 5px,transparent 8px),
+  radial-gradient(circle at 42% 78%,rgba(200,210,150,.8) 0 2px,transparent 5px),
+  radial-gradient(circle at 60% 22%,rgba(130,150,60,.8) 0 2px,transparent 6px),
+  radial-gradient(circle,rgba(30,20,8,.45) 1px,transparent 1.5px) 0 0/5px 6px,
+  linear-gradient(115deg,transparent 46%,rgba(20,12,4,.9) 47% 50%,transparent 51%),
+  linear-gradient(#8a6a34,#5a4120 55%,#3a2a12)}
+.s-rotten .t::after{background:radial-gradient(#140c04 35%,#3a2a12 70%,transparent);width:30%}
+.s-rotten:hover .t{transform:scale(1.06) rotate(-2deg)}
+.s-gap{cursor:default}
+.s-gap .t{background:transparent;outline:2px dashed rgba(255,255,255,.18);outline-offset:-6px;clip-path:none;border-radius:10px}
+.tooth .lbl{position:absolute;left:50%;transform:translateX(-50%);font:500 .6rem var(--f-mono);color:rgba(255,255,255,.55);pointer-events:none}
+.up .lbl{top:calc(100% + 2px)} .dn .lbl{bottom:calc(100% + 2px)}
+.mouth.numb .tooth .t{box-shadow:0 0 0 2px rgba(143,211,255,.35)}
+
+.float{position:absolute;z-index:5;font-family:var(--f-display);font-size:1.05rem;pointer-events:none;animation:rise 1s ease-out forwards;white-space:nowrap;text-shadow:0 2px 0 rgba(0,0,0,.4)}
+@keyframes rise{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,-46px)}}
+
+
+/* ---------- cat heads ---------- */
+.head{margin-top:56px;border-radius:50% 50% 42% 42% / 54% 54% 38% 38%;padding:78px 9% 40px}
+.head .nostril{display:none}
+.head .deco{inset:0;border-radius:inherit}
+.head .deco::before,.head .deco::after{top:-52px;width:28%;height:96px;background:linear-gradient(var(--skin),var(--skin2));clip-path:polygon(50% 0,100% 100%,0 100%)}
+.head .deco::before{left:5%;transform:rotate(-16deg)}
+.head .deco::after{right:5%;transform:rotate(16deg)}
+.head .head-beak{display:block;left:50%;top:44px;width:40px;height:26px;background:#e88a9a;clip-path:polygon(0 0,100% 0,50% 100%);transform:translateX(-50%);z-index:2}
+.head .eye{top:16px;right:20%;width:50px;height:44px;border-radius:50%;background:var(--eyebg)}
+.head .eye.e2{right:auto;left:20%}
+.head .eye::after{width:9px;height:32px;top:6px;border-radius:50%;left:calc(var(--px,14px) + 6px)}
+.head .brow{right:calc(20% - 4px);top:6px;width:58px;height:8px;transform:rotate(var(--brow,0deg));filter:brightness(.75)}
+.head .brow.b2{right:auto;left:calc(20% - 4px);transform:rotate(calc(var(--brow,0deg) * -1))}
+.wh{position:absolute;top:56px;width:24%;height:28px;z-index:2;pointer-events:none;
+  background:linear-gradient(#f4f4f4,#f4f4f4) 0 0/100% 2px no-repeat,linear-gradient(#f4f4f4,#f4f4f4) 0 12px/100% 2px no-repeat,linear-gradient(#f4f4f4,#f4f4f4) 0 24px/100% 2px no-repeat}
+.wh.l{left:-12%;transform:rotate(6deg)}
+.wh.r{right:-12%;transform:rotate(-6deg)}
+.sp-ginger .deco{background:repeating-linear-gradient(90deg,transparent 0 30px,rgba(140,60,10,.4) 30px 42px) 50% 0/46% 60px no-repeat}
+.sp-siam .deco{background:radial-gradient(ellipse at 50% 46%,rgba(74,52,40,.85) 0 22%,transparent 46%)}
+.sp-siam .deco::before,.sp-siam .deco::after{background:#4a3428}
+.sp-pers .deco{background:radial-gradient(circle at 4% 70%,rgba(255,255,255,.55) 0 34px,transparent 35px),radial-gradient(circle at 96% 70%,rgba(255,255,255,.55) 0 34px,transparent 35px),radial-gradient(circle at 50% 100%,rgba(255,255,255,.5) 0 46px,transparent 47px)}
+.sp-pers .deco::before,.sp-pers .deco::after{height:70px;top:-34px}
+.sp-bsh{border-radius:52% 52% 46% 46% / 50% 50% 44% 44%}
+.sp-tom .deco{background:linear-gradient(60deg,transparent 47%,#c86a72 47% 50%,transparent 50%) 74% 6%/70px 80px no-repeat}
+.sp-tom .deco::after{clip-path:polygon(50% 0,64% 26%,52% 36%,100% 100%,0 100%)}
+
+
+/* ---------- store as a supply-company website on an old CRT monitor ---------- */
+.card.monitor{background:transparent;border:0;padding:0;display:grid;justify-items:center}
+.bezel{width:100%;background:linear-gradient(#e4dcc6,#cbc2a8);border-radius:18px 18px 22px 22px;padding:14px 14px 8px;box-shadow:inset 0 2px 0 rgba(255,255,255,.6),inset 0 -4px 0 rgba(0,0,0,.12),0 10px 24px rgba(0,0,0,.4)}
+.screen{position:relative;border-radius:14px/18px;padding:10px 10px 8px;background:radial-gradient(ellipse at 50% 40%,#0e3b2c 0%,#072019 75%,#04140f 100%);color:#8dffb8;font-family:var(--f-mono);
+  box-shadow:inset 0 0 0 3px #2f2a1e,inset 0 0 30px rgba(0,0,0,.8),inset 0 0 60px rgba(60,255,150,.06);overflow:visible}
+.screen::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:3;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px);mix-blend-mode:multiply}
+.screen::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:3;background:radial-gradient(ellipse at 30% 10%,rgba(255,255,255,.08),transparent 45%);animation:flick 4s infinite}
+@keyframes flick{0%,97%,100%{opacity:1}98%{opacity:.6}}
+.crt-bar{display:flex;align-items:center;gap:8px;padding:3px 6px;border:1px solid rgba(141,255,184,.35);border-radius:4px;font-size:.62rem;color:rgba(141,255,184,.75);margin-bottom:6px;min-width:0}
+.crt-dots{display:flex;gap:3px}.crt-dots i{width:6px;height:6px;border-radius:50%;background:rgba(141,255,184,.5)}
+.crt-url{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.crt-head{display:grid;gap:1px;padding:6px 6px 7px;border-bottom:1px dashed rgba(141,255,184,.45);margin-bottom:6px;text-shadow:0 0 6px rgba(141,255,184,.6)}
+.crt-head b{font-size:.84rem;letter-spacing:.06em}
+.crt-head span{font-size:.6rem;color:rgba(141,255,184,.7);letter-spacing:.08em}
+.crt-status{margin:0 0 7px;display:flex;justify-content:space-between;font-size:.66rem;letter-spacing:.08em;padding:0 6px}
+.crt-status #storeState{color:#ff8a70}.crt-status #storeState.open{color:#8dffb8;text-shadow:0 0 6px rgba(141,255,184,.8)}
+.crt-status #storeCount{color:#ffd36b}
+.monitor .store{gap:5px}
+.monitor .tile{background:rgba(141,255,184,.04);border:1px solid rgba(141,255,184,.35);border-radius:4px;color:#8dffb8;font:500 .68rem/1.15 var(--f-mono);text-transform:uppercase;letter-spacing:.03em;padding:7px 3px 6px;gap:3px}
+.monitor .tile:hover,.monitor .tile:focus-visible{border-color:#8dffb8;background:rgba(141,255,184,.14);box-shadow:0 0 10px rgba(141,255,184,.35)}
+.monitor .tile .ico{background:transparent;border:1px solid rgba(141,255,184,.4);color:#8dffb8;border-radius:4px;width:34px;height:34px;filter:drop-shadow(0 0 3px rgba(141,255,184,.6))}
+.monitor .tile .ico svg{width:20px;height:20px}
+.monitor .tile .sku{font-size:.52rem;color:rgba(141,255,184,.55);letter-spacing:.06em}
+.monitor .tile .tn{text-shadow:0 0 4px rgba(141,255,184,.5)}
+.monitor .tile .tp{color:#ffd36b;text-shadow:0 0 5px rgba(255,211,107,.6)}
+.monitor .tile .lvl{color:#ffd36b}
+.monitor .tile.owned{background:#8dffb8;border-color:#8dffb8;color:#062018}
+.monitor .tile.owned .ico{color:#062018;border-color:#062018;filter:none}
+.monitor .tile.owned .sku,.monitor .tile.owned .unl,.monitor .tile.owned .lvl,.monitor .tile.owned .tp{color:#062018;text-shadow:none}
+.monitor .tile.owned .tn{text-shadow:none}
+.monitor .store.closed .tile{opacity:.55}
+.monitor .store.closed .tile .ico,.monitor .store.closed .tile .tn{opacity:1}
+.monitor .tile[aria-disabled="true"] .tp{color:rgba(255,211,107,.5)}
+.monitor .tile.owned[aria-disabled="true"] .tp{color:#062018;font-weight:700}
+.monitor .tile.owned[aria-disabled="true"] .ico{opacity:1}
+.monitor .tip{background:#041510;border:1px solid #8dffb8;color:#8dffb8;font-family:var(--f-mono);font-size:.74rem;text-transform:none;letter-spacing:0;box-shadow:0 0 16px rgba(141,255,184,.3)}
+.monitor .tip em{color:#ffd36b}
+.monitor .store-msg{background:#3a0d0a;color:#ff8a70;border:1px solid #ff8a70;font-family:var(--f-mono);font-weight:500;font-size:.72rem;border-radius:4px}
+.crt-foot{margin:7px 0 0;font-size:.62rem;color:rgba(141,255,184,.7);padding:0 6px}
+.cursor{animation:blink 1s steps(1) infinite}@keyframes blink{50%{opacity:0}}
+.bezel-foot{display:flex;justify-content:space-between;align-items:center;padding:6px 6px 0;font:700 .58rem var(--f-body);letter-spacing:.18em;color:#8a826c}
+.led{width:7px;height:7px;border-radius:50%;background:#5ef08f;box-shadow:0 0 6px #5ef08f}
+.stand{width:34%;height:26px;background:linear-gradient(#bdb397,#a59b80);clip-path:polygon(28% 0,72% 0,100% 100%,0 100%);margin-top:-2px}
+.card.monitor.nope .bezel{box-shadow:0 0 0 3px var(--bad),0 10px 24px rgba(0,0,0,.4)}
+@media (prefers-reduced-motion:reduce){.screen::after,.cursor{animation:none}}
+
+/* ---------- Tools ---------- */
+.tray{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:14px}
+.tool .ct{font:500 .66rem var(--f-mono);color:var(--lamp)}
+.panel.wide{max-width:600px;max-height:calc(100% - 8px);overflow:auto}
+.shop-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.shop-top b{font-family:var(--f-display);font-weight:400;font-size:1.4rem;color:var(--lamp);font-variant-numeric:tabular-nums}
+.shop{display:grid;gap:6px}
+.item{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:9px 12px;border-radius:12px;background:rgba(0,0,0,.18);border:1px solid transparent}
+.ico{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#0f2c35;border:1px solid var(--line);color:var(--lamp)}
+.ico svg{width:26px;height:26px}
+.item .ico{grid-row:1/span 3;grid-column:1}
+.item h4,.item p,.item .own{grid-column:2}
+.item h4{margin:0;font-size:.95rem}
+.item h4 small{font:500 .68rem var(--f-mono);color:var(--muted);margin-left:6px;letter-spacing:.04em;text-transform:uppercase}
+.item p{margin:0;font-size:.82rem;color:var(--muted);grid-column:1}
+.item .own{font:500 .72rem var(--f-mono);color:var(--good)}
+.store{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.tile{position:relative;display:grid;justify-items:center;align-content:start;gap:4px;padding:9px 4px 7px;border-radius:12px;background:rgba(0,0,0,.18);border:2px solid transparent;color:var(--ink);font:700 .74rem/1.2 var(--f-body);cursor:pointer;text-align:center;min-width:0}
+.tile:hover,.tile:focus-visible{border-color:var(--lamp);outline:none}
+.tile .ico{width:38px;height:38px;border-radius:10px}
+.tile .ico svg{width:22px;height:22px}
+.tile .tn{text-wrap:balance}
+.tile .tp{font:500 .72rem var(--f-mono);color:var(--lamp);font-variant-numeric:tabular-nums}
+.tile[aria-disabled="true"]{cursor:not-allowed}
+.tile[aria-disabled="true"] .ico{opacity:.5}
+.tile[aria-disabled="true"] .tp{color:var(--muted)}
+.tile.maxed .tp{color:var(--good)}
+.tile.owned{border-color:rgba(127,224,168,.55);background:rgba(127,224,168,.08)}
+.tile.owned .ico{border-color:var(--good);color:var(--good);opacity:1}
+.tile.owned .tn{opacity:1}
+.tile .unl{font:500 .6rem var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--good)}
+#storeCount{color:var(--good)}
+.tile .lvl{position:absolute;top:4px;right:6px;font:500 .62rem var(--f-mono);color:var(--good)}
+.store.closed .tile{cursor:not-allowed}
+.card.nope{animation:nopeShake .45s cubic-bezier(.36,.07,.19,.97);border-color:var(--bad)}
+@keyframes nopeShake{15%{transform:translateX(-7px)}30%{transform:translateX(6px)}45%{transform:translateX(-5px)}60%{transform:translateX(4px)}75%{transform:translateX(-2px)}100%{transform:none}}
+.store-msg{margin:0;max-height:0;overflow:hidden;opacity:0;font-size:.82rem;font-weight:700;color:#fff;background:var(--bad);border-radius:10px;padding:0 10px;transition:opacity .15s,max-height .15s,padding .15s,margin .15s}
+.store-msg.show{opacity:1;max-height:60px;padding:8px 10px;margin-top:8px}
+@media (prefers-reduced-motion:reduce){.card.nope{animation:none}}
+.store.closed .tile .ico,.store.closed .tile .tn{opacity:.5}
+.store.closed .tile .tp{color:var(--muted)}
+#storeState.open{color:var(--good)}
+.tile.flash{animation:bought .45s}
+@keyframes bought{40%{background:rgba(127,224,168,.3);border-color:var(--good)}}
+.tip{position:absolute;z-index:20;top:calc(100% + 6px);left:50%;transform:translateX(-50%);width:210px;padding:10px 12px;border-radius:10px;background:#0b242c;border:1px solid var(--lamp);color:var(--ink);font:400 .8rem/1.4 var(--f-body);text-align:left;box-shadow:0 10px 24px rgba(0,0,0,.45);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .12s}
+.tile:nth-child(3n+1) .tip{left:0;transform:none}
+.tile:nth-child(3n) .tip{left:auto;right:0;transform:none}
+.tile:hover .tip,.tile:focus-visible .tip{opacity:1;visibility:visible}
+.tip b{display:block;font-size:.88rem;margin-bottom:2px}
+.tip em{display:block;font-style:normal;font:500 .7rem var(--f-mono);color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:.05em}
+.left{display:grid;gap:14px;min-width:0}
+.kit-wrap{overflow-x:auto}
+.kit{width:100%;border-collapse:collapse;font-size:.86rem}
+.kit th{text-align:left;font:500 .68rem var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:4px 8px 8px;border-bottom:1px solid var(--line)}
+.kit td{padding:7px 8px;border-bottom:1px solid rgba(42,90,102,.5);vertical-align:middle}
+.kit tr:last-child td{border-bottom:0}
+.kit td.lv{font-family:var(--f-mono);color:var(--lamp);white-space:nowrap;font-variant-numeric:tabular-nums}
+.kit td.eff{color:var(--muted)}
+.kit .ico{width:34px;height:34px;border-radius:9px}
+.kit .ico svg{width:20px;height:20px}
+.kit .nm{font-weight:700;white-space:nowrap}
+.buy{grid-row:1/span 3;grid-column:3;min-width:78px;font:700 .9rem var(--f-body);padding:8px 10px;border-radius:10px;border:2px solid var(--lamp);background:transparent;color:var(--lamp);cursor:pointer;font-variant-numeric:tabular-nums}
+.buy:hover:not(:disabled){background:var(--lamp);color:#2a1a05}
+.buy:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.buy:disabled{border-color:var(--line);color:var(--muted);cursor:not-allowed}
+@media (max-width:520px){.tray{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.tool{display:grid;justify-items:center;gap:4px;padding:10px 4px 8px;border-radius:14px;border:2px solid var(--line);background:#123540;color:var(--ink);font:700 .82rem var(--f-body);cursor:pointer;transition:border-color .12s,background .12s,transform .08s}
+.tool:hover{border-color:#4d8a96}
+.tool:active{transform:translateY(1px)}
+.tool:focus-visible{outline:3px solid var(--lamp);outline-offset:2px}
+.tool[aria-pressed="true"]{border-color:var(--lamp);background:#2a4b3e;box-shadow:0 0 0 3px rgba(255,190,61,.18)}
+.tool svg{width:34px;height:34px}
+.tool kbd{font:500 .66rem var(--f-mono);color:var(--muted)}
+.tool:disabled{opacity:.45;cursor:not-allowed}
+
+/* ---------- Side chart ---------- */
+aside{display:grid;gap:14px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px 16px;min-width:0}
+.card h2{font-family:var(--f-display);font-weight:400;font-size:1.1rem;margin:0 0 8px;display:flex;justify-content:space-between;align-items:baseline}
+.card h2 small{font-family:var(--f-mono);font-size:.7rem;color:var(--muted)}
+.chart{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-family:var(--f-mono);font-size:.78rem}
+.chart li{display:grid;grid-template-columns:42px 1fr auto;gap:8px;padding:5px 8px;border-radius:8px;background:rgba(0,0,0,.16)}
+.chart li.done{opacity:.55;text-decoration:line-through;text-decoration-color:var(--good)}
+.chart li .rx{color:var(--lamp)}
+.chart li.done .rx{color:var(--good)}
+.empty{color:var(--muted);font-size:.85rem}
+.guide{margin:0;padding-left:18px;font-size:.86rem;color:var(--muted);display:grid;gap:4px}
+.guide b{color:var(--ink)}
+.panel .guide{list-style:none;padding-left:0;gap:8px}
+.guide li{display:grid;grid-template-columns:18px 64px minmax(0,1fr);align-items:center;gap:8px}
+.gn{font:500 .8rem var(--f-mono);color:var(--muted)}
+.minis{display:flex;align-items:center;gap:4px}
+.mini{position:relative;display:inline-block;width:20px;height:28px;flex:none}
+.mini .t{position:absolute;inset:0}
+:where(.mini) :where(.t){background:var(--bone)}
+.mini .t::after{content:"";position:absolute;left:50%;top:30%;width:42%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%}
+.mini.numbed .t{box-shadow:0 0 0 2px var(--numb)}
+.mini.numbed{filter:drop-shadow(0 0 4px var(--numb))}
+.arr{font-size:.8rem;color:var(--muted)}
+.warnrow{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center;padding:10px 12px;border-radius:12px;border:1px solid var(--lamp);background:rgba(255,190,61,.08)}
+.warnrow .mini{width:26px;height:36px}
+.log{font-family:var(--f-mono);font-size:.75rem;color:var(--muted);display:grid;gap:3px;max-height:120px;overflow:auto}
+
+/* ---------- Overlay ---------- */
+.overlay{position:absolute;inset:0;z-index:10;display:grid;place-items:center;padding:16px;background:rgba(8,26,31,.82);backdrop-filter:blur(3px)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px;max-width:440px;width:100%;display:grid;gap:12px;box-shadow:0 20px 50px rgba(0,0,0,.45)}
+.panel h3{font-family:var(--f-display);font-weight:400;font-size:1.7rem;margin:0;line-height:1.1;text-wrap:balance}
+.panel p{margin:0;color:var(--muted)}
+.invoice{font-family:var(--f-mono);font-size:.8rem;display:grid;gap:3px;border-top:1px dashed var(--line);border-bottom:1px dashed var(--line);padding-block:8px}
+.invoice div{display:grid;grid-template-columns:42px 1fr auto;gap:8px;font-variant-numeric:tabular-nums}
+.invoice .pen{color:var(--bad)}
+.stat b.neg{color:var(--bad)}
+.invoice .tot{font-weight:700;color:var(--ink);grid-template-columns:1fr auto}
+.btn{justify-self:start;font-family:var(--f-display);font-size:1.15rem;padding:10px 22px;border-radius:14px;border:0;background:var(--lamp);color:#2a1a05;cursor:pointer;box-shadow:0 4px 0 #b37f17}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 #b37f17}
+.btn:focus-visible{outline:3px solid #fff;outline-offset:3px}
+
+.stage::after{content:"";position:absolute;inset:0;z-index:4;border-radius:inherit;pointer-events:none;opacity:0;
+  background:radial-gradient(ellipse at center,rgba(255,60,50,.18) 30%,rgba(255,40,40,.45) 100%);box-shadow:inset 0 0 0 3px rgba(255,90,80,.8)}
+.stage.special{border:2px solid var(--lamp);box-shadow:0 0 0 4px rgba(255,190,61,.15),0 0 30px rgba(255,190,61,.18)}
+.stage.oops{animation:oopsShake .4s cubic-bezier(.36,.07,.19,.97)}
+.stage.oops::after{animation:oopsTint .6s ease-out}
+@keyframes oopsShake{15%{transform:translate(-5px,1px)}30%{transform:translate(5px,-1px)}45%{transform:translate(-4px,0)}60%{transform:translate(3px,1px)}75%{transform:translate(-2px,0)}100%{transform:none}}
+@keyframes oopsTint{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.stage.oops{animation:none}}
+@media (prefers-reduced-motion:reduce){.head.shake{animation:none}.float{animation-duration:.01s}.gap{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Cat Dental <span>Surgery</span></h1>
+    <div class="stats">
+      <div class="stat"><small id="moneyLbl">Takings</small><b id="money">$0</b></div>
+      <div class="stat"><small>Patients</small><b id="count">0</b></div>
+      <div class="stat lives"><small>Fingers left</small><b id="lives">♥♥♥</b></div>
+      <button class="mute" id="muteBtn" type="button" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><span id="muteLbl">Music on</span></button>
+    </div>
+  </header>
+
+  <div class="game">
+    <div class="card pixcard">
+      <h2>Chair 1 <small>LIVE</small></h2>
+      <div class="pixwrap">
+        <canvas id="pix" width="64" height="88" role="img" aria-label="Pixel-art view of the patient in the dental chair"></canvas>
+        <div class="pixsay" id="pixSay" aria-live="polite"></div>
+      </div>
+      <p class="mood"><span id="pixName">Mango</span><b id="pixMood">Relaxed</b></p>
+      <div class="rep">
+        <p class="rep-h"><span class="lvl-badge" id="repLv">LV 1</span><b id="repTier">New grad</b></p>
+        <div class="bar rep-bar" role="progressbar" aria-label="Reputation experience" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="repBar"><i id="repFill" style="width:0"></i></div>
+        <p class="rep-f"><span id="repNum">0 / 10 XP</span><span id="repTotal">REP 0</span></p>
+        <p class="rep-next" id="repNext">Next: Associate</p>
+        <p class="rep-next" id="repExpect">Patient expectations: normal</p>
+        <div class="lvlup" id="lvlUp" aria-live="polite"></div>
+      </div>    </div>
+    <div class="left">
+    <section class="stage" aria-label="Dental chair">
+      <div class="patient-bar">
+        <div class="who"><b id="pname">Mango</b><small id="pspecies">Ginger tabby · first visit</small></div>
+        <div class="meters">
+          <div class="meter">Patience<div class="bar" id="patBar"><i id="pat"></i></div></div>
+          <div class="meter">Numbing<div class="bar numb"><i id="numb" style="width:0"></i></div></div>
+          <div class="meter">Chair time<span class="clock" id="chair">0:00 · −$0</span></div>
+        </div>
+      </div>
+
+      <div class="head" id="head">
+        <div class="bubble" id="bubble">Is this going to hurt?</div>
+        <div class="deco"></div><div class="head-beak"></div>
+        <div class="brow" id="brow"></div><div class="brow b2"></div><div class="eye" id="eye"></div><div class="eye e2"></div><div class="wh l"></div><div class="wh r"></div>
+        <div class="nostril"></div><div class="nostril"></div>
+        <div class="mouth" id="mouth">
+          <div class="tongue"></div>
+          <div class="jaw upper"><div class="gum"></div><div class="teeth" id="upper"></div></div>
+          <div class="gap" id="gap"></div>
+          <div class="jaw lower"><div class="teeth" id="lower"></div><div class="gum"></div></div>
+        </div>
+      </div>
+
+      <div class="tray" role="toolbar" aria-label="Instruments" id="tray"></div>
+
+      <div class="overlay" id="overlay">
+        <div class="panel">
+          <h3>Your 9:00 is a ginger tabby.</h3>
+          <p>Treat every problem tooth before the patient runs out of patience. If the patience bar hits zero, the jaws snap shut and you lose a finger. Three fingers and the surgery closes.</p>
+          <ol class="guide">
+            <li><span class="gn">1.</span><span class="minis"><span class="mini fang up s-plaque" aria-hidden="true"><span class="t"></span></span></span><span><b>Scaler</b> scrapes yellow plaque.</span></li>
+            <li><span class="gn">2.</span><span class="minis"><span class="mini fang up s-cavity" aria-hidden="true"><span class="t"></span></span><span class="arr" aria-hidden="true">→</span><span class="mini fang up s-filled" aria-hidden="true"><span class="t"></span></span></span><span><b>Drill</b> the black cavity, then <b>Fill</b> it.</span></li>
+            <li><span class="gn">3.</span><span class="minis"><span class="mini fang up s-rotten" aria-hidden="true"><span class="t"></span></span></span><span><b>Forceps</b> pull brown, mouldy teeth.</span></li>
+            <li><span class="gn">4.</span><span class="minis"><span class="mini fang up s-healthy numbed" aria-hidden="true"><span class="t"></span></span></span><span><b>Numb</b> first so drilling and pulling hurt far less.</span></li>
+          </ol>
+          <p>Keys 1–6 pick instruments, M toggles music. Mistakes cost money: wrong instruments, touching healthy teeth, and painful work without numbing all cost you straight away, and chair time costs $2 a second in overheads, so work fast. Rack up $200 of mistakes on one patient and they walk out threatening to sue. Spend your takings at the supply store on the right. Hover an item to see what it does.</p>
+          <button class="btn" id="startBtn">Call in the patient</button>
+        </div>
+      </div>
+    </section>
+    </div>
+
+    <aside>
+      <div class="card monitor" aria-label="Supply store">
+        <div class="bezel">
+          <div class="screen">
+            <div class="crt-bar"><span class="crt-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="crt-url">www.whiskerdental.example/catalogue</span></div>
+            <div class="crt-head"><b>WHISKER DENTAL SUPPLY CO.</b><span>ONLINE CATALOGUE · ACCT #4471</span></div>
+            <p class="crt-status"><span id="storeState" class="open">OPEN</span><span id="storeCount">0/8 UNLOCKED</span></p>
+            <div class="store" id="store" role="group" aria-label="Supply store items"></div>
+            <p class="store-msg" id="storeMsg" role="status" aria-live="polite"></p>
+            <p class="crt-foot" aria-hidden="true">&gt; CLICK ITEM TO ORDER<span class="cursor">_</span></p>
+          </div>
+          <div class="bezel-foot" aria-hidden="true"><span>SUPPLYTRON 3000</span><i class="led"></i></div>
+        </div>
+        <div class="stand" aria-hidden="true"></div>
+      </div>
+      <div class="card">
+        <h2>Treatment plan <small id="chartId">CHART 0001</small></h2>
+        <ul class="chart" id="chart"></ul>
+      </div>
+      <div class="card">
+        <h2>Clinical notes</h2>
+        <div class="log" id="log"><span>Surgery open. Lamp on.</span></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const rnd = a => a[Math.floor(Math.random()*a.length)];
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const SPECIES = [
+  {nick:'Mango', sp:'Ginger tabby', cls:'ginger', eye:'#a6e04a', skin:'#e0893a', skin2:'#b25e22', n:6, shape:'cat', drain:1.2, fee:1.1,
+   chat:['Is there food after this?','I ate a sock once.','Purr... wait, what is that noise?','Do vets have treats?']},
+  {nick:'Duchess', sp:'Persian', cls:'pers', eye:'#7fc8ff', skin:'#f1e7d6', skin2:'#cdbb9c', n:6, shape:'cat', drain:1.4, fee:1.5,
+   chat:['Do you know who my owner is?','Mind the fur. It was blow-dried.','I only drink from crystal.','Make it quick, servant.']},
+  {nick:'Ziggy', sp:'Siamese', cls:'siam', eye:'#4aa8ff', skin:'#efe0c6', skin2:'#cdb796', point:'#4a3428', n:6, shape:'cat', drain:2.0, fee:1.3,
+   chat:['MRAOW. MRAOW. MRAOW.','I have opinions.','Why is it quiet? Talk to me.','Hurry, I am narrating.']},
+  {nick:'Pebbles', sp:'British Shorthair', cls:'bsh', eye:'#f0a02a', skin:'#8d9aaa', skin2:'#66727f', n:6, shape:'cat', drain:0.85, fee:0.9,
+   chat:['Hmph.','I am a loaf. Do not disturb the loaf.','I will allow it.','Fine.']},
+  {nick:'Big Tom', sp:'Alley cat', cls:'tom', eye:'#e8d84a', skin:'#45454d', skin2:'#26262b', n:6, shape:'cat', drain:1.6, fee:1.0,
+   chat:['Seen worse in the alley.','Lost a tooth to a possum once.','Make it quick, doc.',"I don't do vets."]},
+];
+const FEES = {scale:{code:'114',name:'Scale & clean',fee:30}, fill:{code:'531',name:'Restoration',fee:60}, ext:{code:'311',name:'Extraction',fee:45}};
+const PROBLEM = {plaque:'calculus', cavity:'caries', drilled:'prepared', rotten:'non-restorable'};
+const RX = {plaque:'scale', cavity:'drill + fill', drilled:'fill', rotten:'extract'};
+
+const TOOLS = [
+  {id:'numb', label:'Numb', key:'1', svg:'<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="13" y="12" width="14" height="22" rx="3"/><path d="M17 12V7h6v5M20 4v3M8 8l3 2M32 8l-3 2"/><path d="M13 22h14" stroke="#8fd3ff"/></svg>'},
+  {id:'scaler', label:'Scaler', key:'2', svg:'<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8 34L26 12"/><path d="M26 12c3-4 7-4 7-1s-3 4-6 3"/></svg>'},
+  {id:'drill', label:'Drill', key:'3', svg:'<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 30l16-14 6 6-14 16z"/><path d="M26 18l6-6M30 10l4-4"/></svg>'},
+  {id:'fill', label:'Fill', key:'4', svg:'<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8 32L24 16"/><rect x="22" y="8" width="10" height="10" rx="5" fill="#c9ced8" stroke="currentColor"/></svg>'},
+  {id:'forceps', label:'Forceps', key:'5', svg:'<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M10 34l8-16 4-12M30 34l-8-16-4-12"/><circle cx="20" cy="20" r="2"/></svg>'},
+  {id:'lolly', label:'Catnip', key:'6', svg:'<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="20" cy="14" r="9" fill="#df7487" stroke="currentColor"/><path d="M14 11c3-3 9-2 9 3s-6 4-6 1" stroke="#fff"/><path d="M20 23v13"/></svg>'},
+];
+
+const ITEMS = [
+  {id:'anaes', name:'Long-acting anaesthetic', tag:'upgrade', desc:'Numbing lasts 4 seconds longer per level.', max:3, price:l=>[80,160,280][l]},
+  {id:'turbo', name:'Turbo handpiece', tag:'upgrade', desc:'Drilling hurts half as much.', max:1, price:()=>140},
+  {id:'onestep', name:'Bulk-fill kit', tag:'upgrade', desc:'Drilling a cavity fills it in the same step. No second click.', max:1, price:()=>180},
+  {id:'elev', name:'Luxating elevator', tag:'upgrade', desc:'Extractions hurt half as much.', max:1, price:()=>120},
+  {id:'ultra', name:'Ultrasonic scaler', tag:'upgrade', desc:'Every scale soothes the patient: +5 patience.', max:1, price:()=>90},
+  {id:'tv', name:'Ceiling TV', tag:'upgrade', desc:'Patience drains 20% slower per level.', max:2, price:l=>[150,300][l]},
+  {id:'nurse', name:'Dental nurse', tag:'upgrade', desc:'Every patient arrives already numbed.', max:1, price:()=>220},
+  {id:'gold', name:'Gold fillings', tag:'upgrade', desc:'Restorations bill 50% more.', max:1, price:()=>160},
+  {id:'lolly', name:'Catnip treat', tag:'item', desc:'Use mid-treatment (key 6) for +30 patience.', price:()=>35},
+  {id:'block', name:'Bite block', tag:'item', desc:'Stops one chomp, then patience resets to 35. Used automatically.', price:()=>110},
+  {id:'glove', name:'Replacement finger', tag:'item', desc:'Win back a lost finger. Up to 3.', price:()=>250},
+];
+const SV = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const ICONS = {
+  anaes: SV('<path d="M18 2l4 4M20 4l-9 9M15 6l3 3M7 13l4 4M8 12l-5 5v4h4l5-5"/>'),
+  turbo: SV('<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>'),
+  onestep: SV('<path d="M7 3c-2 0-3 2-3 5 0 4 1 13 3 13s2-5 5-5 3 5 5 5 3-9 3-13c0-3-1-5-3-5-2 0-3 1-5 1S9 3 7 3z"/><path d="M9 9l2 2 4-4"/>'),
+  elev: SV('<path d="M3 20h12M7 20l10-14M17 6l3-2"/><circle cx="11" cy="20" r="1.5"/>'),
+  ultra: SV('<path d="M3 12c2-3 4-3 6 0s4 3 6 0 4-3 6 0M3 17c2-3 4-3 6 0s4 3 6 0 4-3 6 0M5 7h14"/>'),
+  tv: SV('<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 2l4 4 4-4M9 21h6"/>'),
+  nurse: SV('<circle cx="12" cy="9" r="4"/><path d="M8 5l4-2 4 2M4 21c1-4 4-6 8-6s7 2 8 6M12 4v2M11 5h2"/>'),
+  gold: SV('<circle cx="12" cy="12" r="8"/><path d="M12 7v10M15 9.5c-.5-1-1.6-1.5-3-1.5-1.7 0-3 .8-3 2s1.3 1.7 3 2 3 .8 3 2-1.3 2-3 2c-1.4 0-2.5-.5-3-1.5"/>'),
+  lolly: SV('<circle cx="12" cy="8" r="6"/><path d="M9 8a3 3 0 0 1 6 0M12 14v8"/>'),
+  block: SV('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8 12h8"/>'),
+  glove: SV('<path d="M8 13V5a1.5 1.5 0 0 1 3 0v6M11 10V3.5a1.5 1.5 0 0 1 3 0V10M14 10V5a1.5 1.5 0 0 1 3 0v7c0 5-2.5 9-6.5 9S5 18 4 15l-1-3a1.5 1.5 0 0 1 2.7-1.2L8 13"/>'),
+};
+const EFFECT = {
+  anaes: l=>`Numbing lasts ${9+4*l} s (+${4*l} s)`, turbo:()=>'Drilling pain halved', onestep:()=>'Drill and fill in one click',
+  elev:()=>'Extraction pain halved', ultra:()=>'+5 patience per scale', tv:l=>`Patience drains ${20*l}% slower`,
+  nurse:()=>'Patients arrive numbed', gold:()=>'Restorations bill +50%',
+};
+const fresh = () => ({money:0, count:0, lives:3, rep:0, stats:{fees:0, chair:0, chairT:0, pen:0, la:0, hand:0, lost:0}, tool:'scaler', running:false, idx:0,
+  up:{anaes:0,turbo:0,onestep:0,elev:0,ultra:0,tv:0,nurse:0,gold:0}, inv:{lolly:1,block:0}});
+let S = fresh();
+let P = null; // current patient
+let last = 0, chatTimer = 0;
+
+/* ---------- music: original procedural loop (Web Audio) ---------- */
+const Music = (() => {
+  let ctx=null, master=null, timer=null, next=0, step=0, noise=null;
+  let on = true; try{ on = localStorage.getItem('dds-music')!=='off'; }catch(e){}
+  const hz = n => 261.63*Math.pow(2,n/12);           // semitones from middle C
+  const ROOTS=[-24,-27,-31,-29];                       // C, A, F, G (bass)
+  const CHORDS=[[0,4,7],[-3,0,4],[-7,-3,0],[-5,-1,2]];
+  const MEL=[
+    [7,null,4,null,7,9,null,7, 4,null,2,null,0,null,null,null],
+    [9,null,7,null,4,null,7,9, 12,null,9,null,7,null,null,null],
+    [5,null,9,null,12,null,9,5, 7,null,5,null,4,null,2,null],
+    [7,null,11,null,14,12,11,null, 7,null,2,null,5,4,2,null]];
+  function env(g,t,a,peak,dec){ g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(peak,t+a); g.gain.exponentialRampToValueAtTime(0.0001,t+a+dec); }
+  function tone(type,f,t,peak,dec,dest=master){ const o=ctx.createOscillator(), g=ctx.createGain(); o.type=type; o.frequency.value=f; env(g,t,.008,peak,dec); o.connect(g).connect(dest); o.start(t); o.stop(t+dec+.05); }
+  function marimba(f,t,v=.16){ tone('triangle',f,t,v,.32); tone('sine',f*4,t,v*.18,.06); }
+  function bass(f,t){ tone('triangle',f,t,.22,.28); }
+  function pad(ns,t,d){ ns.forEach(n=>{ const o=ctx.createOscillator(), g=ctx.createGain(); o.type='sine'; o.frequency.value=hz(n); g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(.035,t+.15); g.gain.linearRampToValueAtTime(0.0001,t+d); o.connect(g).connect(master); o.start(t); o.stop(t+d+.05); }); }
+  function kick(t){ const o=ctx.createOscillator(), g=ctx.createGain(); o.frequency.setValueAtTime(140,t); o.frequency.exponentialRampToValueAtTime(45,t+.12); env(g,t,.004,.35,.16); o.connect(g).connect(master); o.start(t); o.stop(t+.2); }
+  function hat(t,v=.05){ const s=ctx.createBufferSource(), f=ctx.createBiquadFilter(), g=ctx.createGain(); s.buffer=noise; f.type='highpass'; f.frequency.value=7000; env(g,t,.002,v,.04); s.connect(f).connect(g).connect(master); s.start(t); s.stop(t+.06); }
+  function tick(){
+    const tense = S.running && P && P.patience<35, playing = S.running;
+    const bpm = playing ? (tense ? 148 : 116) : 92, sixteenth = 60/bpm/4;
+    while (next < ctx.currentTime + .15){
+      const bar=Math.floor(step/16)%4, s=step%16, t=next;
+      if (s===0) pad(CHORDS[bar], t, sixteenth*16);
+      if ([0,6,8,14].includes(s)) bass(hz(ROOTS[bar]), t);
+      if (s===10) bass(hz(ROOTS[bar]+7), t);
+      const m=MEL[bar][s]; if (m!==null && (playing || s%4===0)) marimba(hz(m), t, playing?.16:.1);
+      if (playing){ if (s%8===0) kick(t); if (s%4===2) hat(t); if (tense && s%2===1) hat(t,.03); }
+      next += sixteenth; step++;
+    }
+  }
+  function init(){
+    if (ctx) return;
+    ctx = new (window.AudioContext||window.webkitAudioContext)();
+    master = ctx.createGain(); master.gain.value = .55; master.connect(ctx.destination);
+    noise = ctx.createBuffer(1, ctx.sampleRate*.1, ctx.sampleRate); const d=noise.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  }
+  function start(){ if(!on) return; try{ init(); ctx.resume(); if(!timer){ next=ctx.currentTime+.05; timer=setInterval(tick,25); } }catch(e){} }
+  function stop(){ clearInterval(timer); timer=null; }
+  function stinger(kind){ if(!on||!ctx) return; const t=ctx.currentTime+.02;
+    (kind==='win'?[0,4,7,12,16]:[7,6,5,4]).forEach((n,i)=>kind==='win' ? marimba(hz(n),t+i*.08,.2) : tone('sawtooth',hz(n-12),t+i*.16,.08,.2)); }
+  function toggle(){ on=!on; try{ localStorage.setItem('dds-music', on?'on':'off'); }catch(e){} on ? start() : stop(); return on; }
+  return {start, toggle, stinger, get on(){return on;}};
+})();
+function syncMute(){ $('muteBtn').setAttribute('aria-pressed', Music.on); $('muteLbl').textContent = Music.on ? 'Music on' : 'Music off'; }
+$('muteBtn').addEventListener('click', ()=>{ Music.toggle(); syncMute(); });
+addEventListener('keydown', e=>{ if (e.key==='m'||e.key==='M'){ Music.toggle(); syncMute(); } });
+syncMute();
+
+/* ---------- 8-bit chair view ---------- */
+const PIX = {pain:0, work:0, happy:0, chomp:0, last:0, frame:0, drops:[], hearts:[]};
+const pc = $('pix').getContext('2d');
+function mix(hex, w, a){ const n=parseInt(hex.slice(1),16), r=n>>16, g=n>>8&255, b=n&255;
+  const m=(c)=>Math.round(c+(w-c)*a); return `rgb(${m(r)},${m(g)},${m(b)})`; }
+function px(x,y,w,h,c){ pc.fillStyle=c; pc.fillRect(Math.round(x),Math.round(y),w,h); }
+const TOOLCOL = {numb:'#8fd3ff', scaler:'#c9ced8', drill:'#9aa3ad', fill:'#e8e8f0', forceps:'#b8c0c8'};
+function drawPix(now){
+  if (!P) return;
+  const f = ++PIX.frame, t = now/1000, sp = P.sp, skin=sp.skin, dark=sp.skin2, belly=mix(sp.skin,255,.45);
+  const pat = P.patience, chomping = PIX.chomp>0;
+  // room
+  px(0,0,64,88,'#173c46');
+  for (let y=6;y<76;y+=10) px(0,y,64,1,'#1b4550');
+  px(44,14,13,15,'#f5f0e2'); px(45,15,11,1,'#df7487');                   // wall tooth chart
+  for (let i=0;i<5;i++){ px(46+i*2,18,1,3,'#cfc7b0'); px(46+i*2,23,1,3,'#cfc7b0'); }
+  px(50,26,3,1,'#93b8b3');
+  for (let x=0;x<64;x+=4) for (let y=76;y<88;y+=4) px(x,y,4,4, ((x+y)/4)%2 ? '#0f2c35':'#123540');
+  // lamp + flickering cone
+  px(20,2,42,1,'#6d7a80'); px(61,0,1,3,'#6d7a80'); px(20,2,1,6,'#6d7a80');
+  px(14,8,13,3,'#8a979d'); px(16,11,9,1, f%14===0?'#e8a020':'#ffbe3d');
+  pc.fillStyle = `rgba(255,214,120,${.10 + (f%14===0?0:.04)})`;
+  pc.beginPath(); pc.moveTo(16,12); pc.lineTo(25,12); pc.lineTo(24,36); pc.lineTo(-2,36); pc.closePath(); pc.fill();
+  // chair
+  px(28,64,6,12,'#6d7a80'); px(22,74,18,2,'#55626a');
+  px(14,60,30,3,'#2f8f8a'); px(14,63,30,1,'#22706b');
+  [[10,56],[8,52],[6,48],[4,44]].forEach(([x,y])=>{ px(x,y,7,4,'#2f8f8a'); px(x+6,y,1,4,'#22706b'); });
+  px(1,40,9,4,'#2f8f8a'); px(44,61,6,3,'#2f8f8a'); px(48,63,4,5,'#2f8f8a');
+  // cat (with pain shake)
+  const sx = (PIX.pain>0 || chomping) ? (f%2?1:-1) : (P.wriggly && S.running ? Math.round(Math.sin(t*2)*1.5) : 0), sy = PIX.happy>0 && f%6<3 ? -1 : 0;
+  pc.save(); pc.translate(sx,sy);
+  const cls = sp.cls, pt = sp.point || dark, pink = '#f2a8b4';
+  // tail: long and curling, swishes harder when cross
+  const wag = pat<35 ? 10 : 3;
+  for (let i=0;i<9;i++){ const y=56+Math.round(Math.sin(t*wag+i*.7)*(i/2.5)) - (i>6?(i-6):0);
+    px(34+i*2.6,y,3,2, cls==='siam' ? (i>4?pt:skin) : (cls==='ginger' && i%2 ? dark : skin)); }
+  // body, belly up
+  px(8,46,10,8,skin); px(12,50,14,8,skin); px(18,52,16,7,skin);
+  px(10,46,8,2,belly); px(14,50,12,2,belly); px(20,52,12,2,belly);
+  if (cls==='ginger') [14,19,24,29].forEach(x=>px(x, x<18?54:56, 2,2, dark));
+  if (cls==='pers'){ px(5,43,5,5,belly); px(8,41,7,3,belly); }       // fluffy ruff
+  // back leg + paw (fidgets when impatient)
+  const kick = pat<50 && f%8<4 ? -1 : 0;
+  px(28,50,8,7,skin); px(34,55,3,8,skin); px(34,63+kick,5,2, cls==='siam'?pt:skin); px(38,63+kick,1,1,pink);
+  // front paw kneading the air
+  px(16,46,4,2,skin); px(20,46-(f%10<5?1:0),2,2, cls==='siam'?pt:skin);
+  // neck
+  px(9,39,7,8,skin); px(9,41,2,5,belly);
+  // round head; ears flatten when cross
+  const open = chomping ? 0 : Math.max(0, Math.min(5, Math.round(pat/20)));
+  const flat = pat<35 ? 1 : 0, ear = cls==='siam' ? pt : skin;
+  px(2,26,13,12,skin); px(1,28,15,8,skin);
+  px(2,23+flat,3,3,ear); px(3,22+flat,1,1,ear); px(12,23+flat,3,3,ear); px(13,22+flat,1,1,ear);
+  px(3,24+flat,1,2,pink); px(13,24+flat,1,2,pink);
+  if (cls==='siam') px(4,30,9,6,pt);                                  // dark mask
+  if (cls==='ginger'){ px(6,26,1,2,dark); px(8,26,1,3,dark); px(10,26,1,2,dark); }
+  if (cls==='tom'){ px(11,27,1,4,'#c86a72'); px(14,22+flat,1,2,'#173c46'); }   // scar + torn ear
+  if (cls==='pers'){ px(1,27,2,2,belly); px(14,27,2,2,belly); }
+  // eyes with slit pupils that narrow when cross
+  const blink = (f%40)<2;
+  [[4,29],[10,29]].forEach(([x,y])=>{ if (blink){ px(x,y+1,3,1,dark); return; }
+    px(x,y,3,3,sp.eye); px(x+1, y+(pat<35?1:0), 1, pat<35?1:3, '#1a1208'); });
+  px(7,33,3,1,'#e88a9a'); px(8,34,1,1,'#e88a9a');                     // nose
+  ['#e6e6e6'].forEach(c=>{ px(-1,33,4,1,c); px(-1,35,4,1,c); px(13,33,4,1,c); px(13,35,4,1,c); });   // whiskers
+  // mouth: teeth mirror the real chart
+  const my = 36;
+  if (open>0) px(4,my,9,open,'#4a1420');
+  if (open>1) px(6,my+Math.max(0,open-2),5,1,'#e06b80');
+  px(3,my+open,11,2,skin);
+  const tall = open>=3 ? 2 : 1;
+  const TOP = {healthy:'#f5f0e2', plaque:'#d9c25a', cavity:'#f5f0e2', drilled:'#9a9ca4', filled:'#dfe3ea', rotten:'#7a5a26'};
+  const TIP = {healthy:'#f5f0e2', plaque:'#b39a34', cavity:'#140c08', drilled:'#55575e', filled:'#ffffff', rotten:'#9aa54a'};
+  ['U','L'].forEach(arch=>{
+    const row = P.teeth.filter(x=>x.arch===arch), n=row.length;
+    row.forEach((tooth,i)=>{
+      if (tooth.state==='gap') return;
+      const x = 4 + Math.round(i*(8/Math.max(1,n-1)));
+      const a = TOP[tooth.state]||'#f5f0e2', b = TIP[tooth.state]||a, fang = i===0 || i===n-1;
+      if (arch==='U'){ px(x,my,1,1,a); if (tall>1 || fang) px(x,my+1,1,1,b); }
+      else { px(x,my+open-1,1,1,a); if (tall>1 || fang) px(x,my+open-2,1,1,b); }
+    });
+  });
+  pc.restore();
+  // instrument at the mouth
+  if (S.running){
+    const c = TOOLCOL[S.tool]||'#c9ced8', bob = PIX.work>0 ? (f%2) : 0;
+    for (let i=0;i<9;i++) px(24-i*2+bob, 22+i*1.5-bob, 2,1, c);
+    px(6+bob,35,2,2, S.tool==='drill' && PIX.work>0 && f%2 ? '#fff' : c);
+    px(22,19,4,2,'#3b6f7a');                            // gloved hand
+  }
+  // effects
+  if (P.numb>0 && f%6<3){ px(14,30,1,3,'#8fd3ff'); px(13,31,3,1,'#8fd3ff'); }
+  if (P.numb>0 && f%6>=3){ px(-0,40,1,3,'#8fd3ff'); px(-1,41,3,1,'#8fd3ff'); }
+  if (pat<35 && S.running && f%5===0) PIX.drops.push({x:6+Math.random()*8, y:24});
+  PIX.drops = PIX.drops.filter(d=>(d.y+=1.2)<34); PIX.drops.forEach(d=>px(d.x,d.y,1,2,'#8fd3ff'));
+  if (PIX.pain>0){ px(16,14,2,6,'#ff6a5c'); px(16,21,2,2,'#ff6a5c'); px(20,15,2,5,'#ff6a5c'); px(20,21,2,2,'#ff6a5c'); }
+  if (PIX.happy>0 && f%4===0) PIX.hearts.push({x:2+Math.random()*14, y:28});
+  PIX.hearts = PIX.hearts.filter(h=>(h.y-=.8)>2);
+  PIX.hearts.forEach(h=>{ px(h.x,h.y,1,1,'#df7487'); px(h.x+2,h.y,1,1,'#df7487'); px(h.x,h.y+1,3,1,'#df7487'); px(h.x+1,h.y+2,1,1,'#df7487'); });
+  if (chomping){ pc.fillStyle=`rgba(255,106,92,${f%2?.35:.15})`; pc.fillRect(0,0,64,88);
+    [[4,22],[14,20],[22,28]].forEach(([x,y])=>{ px(x,y,3,1,'#ffbe3d'); px(x+1,y-1,1,3,'#ffbe3d'); }); }
+  // caption
+  const mood = chomping ? 'Bit the dentist' : PIX.happy>0 ? 'Delighted' : PIX.pain>0 ? 'In agony' :
+    P.numb>0 ? 'Numb, dribbling' : (P.agitation||1)>1.3 ? 'Seething' : P.sensitive && pat>65 ? 'Wincing' : pat>65 ? 'Relaxed' : pat>35 ? 'Fidgeting' : 'About to bite';
+  if ($('pixMood').textContent!==mood) $('pixMood').textContent=mood;
+  if ($('pixName').textContent!==sp.nick) $('pixName').textContent=sp.nick;
+}
+const QUIPS = {
+  scale:['Ooh, tuna-fresh breath.','Nine lives of tartar, gone.','My breath could stun a goldfish. Not anymore.','Scrape away. I was saving that for the couch.'],
+  drill:['Bzzzt! Is that the VACUUM?!','My whiskers are vibrating.','I hate that noise more than the bath.'],
+  fill:['Shiny! Like the bell on my collar.','A filling? How fancy.','Now I sparkle when I hiss.','Do I get a treat for that?'],
+  ext:['Can I bat it under the fridge?','Pop! Like a ping-pong ball.','One less fang to bite you with. Probably.','Goodbye, old fang.'],
+  numb:["I can't feel my whithkers.","Ith thith catnip?","Who turned my fathe off?"],
+  lolly:['Catnip! You may proceed.','Bribery works. Carry on.','Mmm. I love you. Briefly.'],
+  pain:['OW! Ever heard of anaesthetic?','I have nine lives and you just wasted one.',"I'm leaving a one-star hiss.",'That hurt more than the bath.'],
+  wrongTool:['Is that a fork?','Did you train at vet school or a pet shop?','I think that tool is for the litter box.','Wrong gadget, human.'],
+  healthy:['That one was FINE.','Hey! That tooth was minding its own business.','Do you even read the chart?','Leave the good ones alone!'],
+  drilledGood:['You drilled a GOOD tooth?!','That was my best fang. WAS.','I want a second opinion. From a dog. Ugh.'],
+  wrongExt:['That was my FAVOURITE fang!',"I'm telling the Vet Board.",'I needed that for biting ankles.','Put it BACK.'],
+  drillFirst:["You can't fill a hole that isn't there, human.",'Drill first, genius.','Wrong order, human.'],
+  done:['Best dentist in all nine lives!','Smile check: purrfect.','See you never. Fine, six months.'],
+  sue:["See you in court, human!","My lawyer has claws.","I'm suing for every can of tuna you own.","Malpractice! MEOWLPRACTICE!"],
+  chomp:["CHOMP! That's for the drilling.",'Oops. Was that your hand?','Tasted like latex and regret.'],
+};
+const SPQ = {
+  ginger:{good:['Is it dinner time now?','I will celebrate with a whole lasagne.'], bad:['I will knock your coffee off the desk.','I ate a sock once. I will eat your glove.']},
+  pers:{good:['Acceptable. Barely.','You may kiss the paw.'], bad:['My owner will hear about this.','This fur costs more than your surgery.']},
+  siam:{good:['MRAOW! Good! Mraow!','I will tell everyone. Loudly.'], bad:['MRAAAOOOW. MRAAAAOOW.','I will scream about this at 3am.']},
+  bsh:{good:['Hmph. Fine.','The loaf approves.'], bad:['The loaf is displeased.','I will sit on your keyboard for this.']},
+  tom:{good:['Not bad, doc. Not bad.','Back to the alley, looking sharp.'], bad:["I've had worse from a possum.",'You want to take this outside?']},
+};
+let sayT = 0;
+function pixSay(kind, bad){
+  if (!P) return;
+  const sp = SPQ[P.sp.cls], pool = QUIPS[kind] || [];
+  const extra = sp ? (bad ? sp.bad : sp.good) : [];
+  const line = (Math.random()<.3 && extra.length && !['numb','lolly','chomp'].includes(kind)) ? rnd(extra) : rnd(pool);
+  const el = $('pixSay'); el.textContent = line; el.classList.toggle('bad', !!bad); el.classList.add('show');
+  clearTimeout(sayT); sayT = setTimeout(()=>el.classList.remove('show'), 2800);
+}
+// XP thresholds: at 10 XP per satisfied patient, Associate takes 5 patients, then each rank takes longer
+const REP_MAX = 500;
+const REP_TIERS = [[-500,'Struck off'],[-300,'Under investigation'],[-150,'On notice'],[-50,'Bad reviews'],[0,'New grad'],[50,'Associate'],[120,'Senior dentist'],[200,'Practice owner'],[300,'Specialist'],[450,'Legend']];
+// experience-bar view of reputation: each rank is a level; the bar fills toward the next one
+let lastLevel = null;
+function repLevel(r){
+  const idx = REP_TIERS.filter(([min])=>r>=min).length - 1;          // 0..9
+  const zero = REP_TIERS.findIndex(([min])=>min===0);                // index of New grad
+  const lv = idx >= zero ? idx - zero + 1 : idx - zero;              // 1..6 above, −1..−4 below
+  const [min, name] = REP_TIERS[idx], next = REP_TIERS[idx+1];
+  const top = next ? next[0] : REP_MAX;
+  return {lv, name, min, top, nextName: next ? next[1] : null, idx};
+}
+function renderRep(gain){
+  const r = S.rep, L = repLevel(r), neg = r<0;
+  const span = Math.max(1, L.top - L.min), into = r - L.min, pct = L.nextName ? into/span*100 : (r>=REP_MAX ? 100 : into/span*100);
+  $('repFill').style.width = Math.max(0,Math.min(100,pct))+'%';
+  $('repBar').classList.toggle('neg', neg); $('repTier').classList.toggle('neg', neg);
+  $('repLv').textContent = 'LV ' + (L.lv<0 ? '−'+(-L.lv) : L.lv); $('repLv').classList.toggle('neg', neg);
+  $('repTier').textContent = L.name;
+  $('repTotal').textContent = 'REP ' + (neg ? '−'+(-r) : r);
+  $('repNum').textContent = L.nextName ? `${into} / ${span} XP` : (r>=REP_MAX ? 'MAX' : `${into} / ${span} XP`);
+  $('repNext').textContent = L.nextName ? `Next: ${L.nextName}` : 'Top rank';
+  const ex = EXPECT[L.lv] || 1;
+  $('repExpect').textContent = ex>1 ? `Patient expectations: mistakes cost ×${ex}` : 'Patient expectations: normal';
+  $('repExpect').style.color = ex>=2 ? 'var(--bad)' : ex>1 ? 'var(--lamp)' : '';
+  $('repBar').setAttribute('aria-valuenow', Math.round(pct));
+  $('repBar').setAttribute('aria-valuetext', `Level ${L.lv}, ${L.name}, ${into} of ${span} experience to ${L.nextName||'max'}`);
+  if (lastLevel !== null && L.lv !== lastLevel){
+    const up = L.lv > lastLevel, el = $('lvlUp');
+    el.textContent = up ? `LEVEL UP! ${L.name}` : `DEMOTED: ${L.name}`;
+    el.className = 'lvlup ' + (up ? 'up' : 'down'); void el.offsetWidth;
+    note(up ? `Promoted to ${L.name} (level ${L.lv}).` : `Demoted to ${L.name}.`);
+    if (up) Music.stinger('win');
+  }
+  lastLevel = L.lv;
+  if (gain){ const b=$('repBar'); b.classList.remove('gain','loss'); void b.offsetWidth; b.classList.add('gain'); note(`+${gain===true?'':gain}XP. Reputation now ${r} (${L.name}).`); }
+}
+const XP_PER_PATIENT = 10;   // flat reputation XP for each satisfied patient
+// higher rank → higher patient expectations → each mistake costs more money and XP
+const EXPECT = {1:1, 2:1.25, 3:1.5, 4:2, 5:2.5, 6:3};
+function expectation(){ return EXPECT[repLevel(S.rep).lv] || 1; }
+function flashRep(kind){ const b=$('repBar'); b.classList.remove('gain','loss'); void b.offsetWidth; b.classList.add(kind); }
+function settleRepLoss(){   // unsatisfied patient: no award, mistakes still count
+  const lost = Math.min(S.rep + REP_MAX, P.repLoss); if (!lost) return;
+  S.rep -= lost; renderRep(); flashRep('loss');
+  note(`Reputation −${lost} XP for this visit (now ${S.rep}).`);
+}
+function tickPix(now){
+  if (now-PIX.last < 90) return;
+  const dt=(now-PIX.last)/1000; PIX.last=now;
+  ['pain','work','happy','chomp'].forEach(k=>PIX[k]=Math.max(0,PIX[k]-dt));
+  drawPix(now);
+}
+
+/* ---------- tray ---------- */
+const tray = $('tray');
+TOOLS.forEach(t => {
+  const b = document.createElement('button');
+  b.className='tool'; b.id='tool-'+t.id; b.type='button';
+  b.setAttribute('aria-pressed', t.id===S.tool);
+  b.innerHTML = t.svg + '<span>'+t.label+(t.id==='lolly'?' <span class="ct" id="lollyN">×1</span>':'')+'</span><kbd>'+t.key+'</kbd>';
+  if (t.id==='lolly') b.removeAttribute('aria-pressed');
+  b.addEventListener('click', () => use(t.id));
+  tray.appendChild(b);
+});
+function use(id){ id==='numb' ? spray() : id==='lolly' ? lolly() : pick(id); }
+function pick(id){ S.tool=id; TOOLS.forEach(t=>{ if(t.id!=='lolly') $('tool-'+t.id).setAttribute('aria-pressed', t.id===id); }); }
+addEventListener('keydown', e => {
+  const t = TOOLS.find(t=>t.key===e.key); if(!t || !S.running) return;
+  use(t.id);
+});
+function lolly(){
+  if (!S.running) return;
+  if (S.inv.lolly<=0){ note('No lollipops left. Buy more at the store.'); return; }
+  S.inv.lolly--; P.patience=Math.min(100,P.patience+30);
+  say(rnd(['Ooh, catnip!','Mmm. You may continue.','I love you. Briefly.']));
+  pixSay('lolly'); note('Catnip treat given (+30 patience).'); updateHUD();
+}
+
+/* ---------- patient ---------- */
+function newPatient(){
+  const level = S.idx;
+  const sp = SPECIES[level < SPECIES.length ? [0,1,3,4,2][level] : Math.floor(Math.random()*SPECIES.length)];
+  const teeth = [];
+  for (const arch of ['U','L']) for (let i=0;i<sp.n;i++){
+    const half = sp.n/2, side = i < half ? 'R':'L';
+    const num = side==='R' ? Math.ceil(half - i) : (i - Math.floor(half) + 1);
+    teeth.push({arch, code: arch+side+num, state:'healthy'});
+  }
+  // caseload grows with every patient: 2 findings for the first, +1 each visit after, until nearly every tooth needs work
+  const nProb = Math.min(teeth.length-2, 2 + level);
+  const pool = teeth.slice().sort(()=>Math.random()-.5).slice(0,nProb);
+  // after the first stage (patients 1–5), plaque takes a bigger share of the work each stage
+  const stage = Math.floor(level / SPECIAL_EVERY);
+  const plaqueShare = Math.min(.8, .38 + .12*stage);
+  const nPlaque = stage ? Math.round(nProb * plaqueShare) : -1;
+  pool.forEach((t,i) => {
+    if (nPlaque >= 0) t.state = i < nPlaque ? 'plaque' : (Math.random() < .55 ? 'cavity' : 'rotten');
+    else { const r=Math.random(); t.state = r<.38?'plaque': r<.72?'cavity':'rotten'; }
+    t.problem=t.state; });
+  const numbMax = 9 + 4*S.up.anaes;
+  Object.assign(PIX, {pain:0, work:0, happy:0, chomp:0, drops:[], hearts:[]});
+  P = {sp, teeth, patience:100, numb:0, numbMax, drain: sp.drain*1.25*(1+level*0.09)*(1-0.2*S.up.tv), bill:[], pen:[], repLoss:0, level, chairTime:0, chairAcc:0, chairCost:0, chairShown:-1};
+  $('chair').textContent = '0:00 · −$0';
+  P.shots = 0;
+  if (S.up.nurse){ P.numb=numbMax; P.shots=1; S.money-=LA_COST; $('mouth').classList.add('numb'); setTimeout(()=>note(`Nurse gave a local anaesthetic (−$${LA_COST}).`),0); }
+  else $('mouth').classList.remove('numb');
+  $('pname').textContent = sp.nick;
+  P.wriggly = isSpecial(S.idx);   // special stage: moving jaws
+  document.querySelector('.stage').classList.toggle('special', P.wriggly);
+  P.sensitive = S.rolled===S.idx && !!S.nextSens;   // modifier rolled in start(): plaque scaling hurts unless numbed
+  P.nProb = nProb;
+  $('pspecies').textContent = sp.sp + ' · ' + nProb + ' findings' + tags();
+  $('pspecies').style.color = (P.wriggly || P.sensitive) ? 'var(--lamp)' : '';
+  if (P.sensitive) setTimeout(()=>say(rnd(['My teeth are SO sensitive.','Even cold air hurts. Be gentle.','Please numb me first. Please.'])), 60);
+  if (P.wriggly) setTimeout(()=>say(rnd(["I can't keep still!","Sorry, I'm ticklish.","Is it hot in here? I'm squirming."])), 50);
+  ['upper','lower'].forEach(id=>$(id).style.transform=''); $('mouth').style.transform='';
+  $('chartId').textContent = 'CHART ' + String(1000+S.idx*7+3).padStart(4,'0');
+  const head = $('head'); head.className = 'head sp-'+sp.cls;
+  head.style.setProperty('--skin', sp.skin); head.style.setProperty('--skin2', sp.skin2); head.style.setProperty('--eyebg', sp.eye);
+  buildMouth(); say(rnd(sp.chat)); renderChart();
+  note(`${sp.nick} seated. ${nProb} findings charted${level>0 ? ` (patient ${level+1}: caseload rising)` : ''}${stage ? `, ${nPlaque} need scaling` : ''}.`);
+}
+
+function tags(){
+  return (P.wriggly ? ' · SPECIAL STAGE: WRIGGLY' : '') + (P.sensitive ? ' · SENSITIVE: numb before scaling' : '');
+}
+function buildMouth(){
+  const th = P.sp.shape==='peg' ? 48 : P.sp.shape==='leaf' ? 56 : 70;
+  $('mouth').style.setProperty('--th', th+'px');
+  for (const [arch, el] of [['U',$('upper')],['L',$('lower')]]){
+    el.innerHTML='';
+    P.teeth.filter(t=>t.arch===arch).forEach((t,i,arr)=>{
+      const b=document.createElement('button'); b.type='button';
+      const canine = i===0 || i===arr.length-1;
+      b.className = `tooth ${canine?'fang':'peg'} ${arch==='U'?'up':'dn'}`;
+      b.style.setProperty('--th', (canine?70:36)+'px');
+      b.innerHTML='<span class="t"></span><span class="lbl">'+t.code+'</span>';
+      b.addEventListener('click', ev => treat(t, b, ev));
+      t.el=b; paint(t); el.appendChild(b);
+    });
+  }
+}
+function paint(t){
+  t.el.className = t.el.className.replace(/\bs-\w+/g,'').trim() + ' s-'+t.state;
+  t.el.setAttribute('aria-label', `${t.code}: ${t.state==='healthy'?'healthy':t.state==='filled'?'restored':t.state==='gap'?'extracted':PROBLEM[t.state]}`);
+  t.el.disabled = t.state==='gap';
+}
+
+/* ---------- treatment ---------- */
+function treat(t, el, ev){
+  if (!S.running || t.state==='gap') return;
+  const tool = S.tool, numb = P.numb>0;
+  let pain=0, ok=false, msg='', pen=0, why='', rep=0;
+  const s=t.state;
+  if (tool==='scaler' && s==='plaque'){ t.state='healthy'; t.fixed=true; pain = P.sensitive && !numb ? 18 : (S.up.ultra?-5:3); ok=true; bill('scale',t); msg='Clean'; }
+  else if (tool==='drill' && s==='cavity'){ pain=numb?3:(S.up.turbo?10:20); ok=true;
+    if (S.up.onestep){ t.state='filled'; bill('fill',t); msg='Drilled + filled'; } else { t.state='drilled'; msg='Drilled'; } }
+  else if (tool==='fill' && s==='drilled'){ t.state='filled'; pain=1; ok=true; bill('fill',t); msg='Filled'; }
+  else if (tool==='forceps' && s==='rotten'){ t.state='gap'; pain=Math.round((numb?5:32)*(S.up.elev?0.5:1)); ok=true; bill('ext',t); msg='Out!'; }
+  else if (tool==='forceps'){ t.state='gap'; pain=numb?8:30; msg='Wrong tooth!'; pen=100; rep=8; why=`Healthy ${t.code} extracted in error`;
+    if (!numb){ pen+=40; rep+=4; why+=' without anaesthetic'; } }
+  else if (tool==='drill' && (s==='healthy'||s==='filled')){ t.state='drilled'; t.iatro=true; t.problem=t.problem||'drilled'; pain=numb?5:(S.up.turbo?11:22); msg='Now fill it, free'; pen=100; rep=6; why=`Sound ${t.code} drilled in error`; }
+  else if (tool==='fill' && s==='cavity'){ pain=6; msg='Drill first'; pen=25; rep=2; why=`Filling material wasted on ${t.code}`; }
+  else if (s==='healthy'||s==='filled'){ pain=10; msg='That one\'s fine!'; pen=30; rep=2; why=`Instrument on healthy ${t.code}`; }
+  else { pain=7; msg='Wrong instrument'; pen=25; rep=2; why=`Wrong instrument on ${t.code}`; }
+  // poor technique: working without local anaesthetic
+  if (ok && tool==='scaler' && P.sensitive && !numb){ pen+=40; rep+=4; why=`Sensitive ${t.code} scaled without anaesthetic`; msg+=', no LA!'; }
+  else if (ok && tool==='forceps' && !numb){ pen+=40; rep+=4; why=`${t.code} extracted without anaesthetic`; msg+=', no LA!'; }
+  else if (ok && pain>=15){ pen+=80; rep+=8; why=`Complaint: ${t.code} drilled without anaesthetic`; msg+=', no LA!'; }
+  // 8-bit patient quip
+  const quip = ok ? (pain>=15 ? 'pain' : tool==='scaler' ? 'scale' : tool==='forceps' ? 'ext' : tool==='fill' || t.state==='filled' ? 'fill' : 'drill')
+    : tool==='forceps' ? 'wrongExt' : tool==='drill' && t.iatro ? 'drilledGood' : tool==='fill' && s==='cavity' ? 'drillFirst'
+    : (s==='healthy'||s==='filled') ? 'healthy' : 'wrongTool';
+  pixSay(ok && tool==='forceps' && !numb ? 'pain' : quip, !ok || pain>=15 || (tool==='forceps' && !numb));
+  if (pen){ const ex = expectation(); pen = Math.round(pen * PEN_MULT * ex); rep *= ex;
+    if (ex>1) why += ` (×${ex} expectations)`;
+    oops(); P.pen.push({name:why, amt:pen});
+    P.repLoss += Math.max(1, Math.round(rep * REP_MULT));   // tallied now, settled once when the patient leaves
+    P.drain *= 1.15; P.agitation = (P.agitation||1)*1.15;   // each mistake makes the jaw close faster for the rest of the visit
+    $('pspecies').textContent = `${P.sp.sp} · agitated: jaw closing ${Math.round((P.agitation-1)*100)}% faster${tags()}`;
+    $('pspecies').style.color = 'var(--bad)'; S.money -= pen; msg+=` −$${pen}`; note(`${why} (−$${pen}).`); }
+  paint(t);
+  P.patience = Math.min(100, Math.max(0, P.patience - pain));
+  PIX.work = .5; if (pain>=15) PIX.pain = .6;
+  floatText(ev, el, msg, pen ? 'var(--bad)' : 'var(--good)');
+  if (pain>=15){ say(rnd(['MRRROWW!','HSSSSS!','YOWL!','That\'s a NERVE!']), true); shake(); }
+  else if (!ok) { say(rnd(['Hey!','Watch it!','Do you have a licence?','Hmmph.']), true); }
+  else if (ok && Math.random()<.35) say(rnd(['Ahh.','Mmf, better.','Oo, tickles.']));
+  if (ok) note(`${t.code} ${msg.toLowerCase()}${numb && pain<10 && (tool==='drill'||tool==='forceps')?' under local':''}.`);
+  renderChart(); updateHUD();
+  if (P.pen.reduce((a,b)=>a+b.amt,0) >= SUE_AT){ walkout(); return; }
+  if (!P.teeth.some(x=>RX[x.state])) finish();
+}
+function spray(){
+  if (!S.running) return;
+  if (P.numb>0){ say('I already can\'t feel my face.'); return; }
+  P.numb = P.numbMax; P.patience=Math.max(0,P.patience-2); S.money-=LA_COST; P.shots++;
+  $('mouth').classList.add('numb'); say(rnd(['Mmmfh... cold!','Thath feelth weird.','Ith ith numb.']));
+  floatText(null, $('tool-numb'), `−$${LA_COST}`, 'var(--numb)');
+  pixSay('numb'); note(`Local anaesthetic, shot ${P.shots} (−$${LA_COST}).`); updateHUD();
+}
+function bill(kind,t){ const f=FEES[kind]; const gold = kind==='fill' && S.up.gold ? 1.5 : 1;
+  if (t.iatro){ P.bill.push({code:f.code, name:`${f.name} ${t.code} (no charge, our error)`, amt:0}); return; }
+  P.bill.push({code:f.code, name:`${f.name}${gold>1?' (gold)':''} ${t.code}`, amt:Math.round(f.fee*P.sp.fee*gold)}); }
+
+/* ---------- store ---------- */
+const PRICE_MULT = 3;
+const PEN_MULT = 1;   // scales every mistake penalty
+const REP_MULT = 0.5; // scales reputation lost per mistake
+const LA_COST = 10;   // price of each local anaesthetic shot
+const CHAIR_RATE = 2; // dollars of overheads per second a patient is in the chair
+function tally(fees){   // add this visit to the end-of-game score
+  const st=S.stats; st.fees+=fees; st.chair+=P.chairCost; st.chairT+=P.chairTime;
+  st.pen+=P.pen.reduce((a,b)=>a+b.amt,0); st.la+=P.shots*LA_COST;
+}
+function fmtTime(s){ s=Math.floor(s); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
+const cost = (it,lv) => it.price(lv) * PRICE_MULT;
+function owned(it){ return it.tag==='upgrade' ? S.up[it.id] : it.id==='glove' ? S.lives : S.inv[it.id]; }
+const SHORT = {anaes:'Anaesthetic', turbo:'Turbo drill', onestep:'Bulk-fill', elev:'Elevator', ultra:'Ultrasonic', tv:'Ceiling TV',
+  nurse:'Nurse', gold:'Gold fill', lolly:'Catnip', block:'Bite block', glove:'New finger'};
+let storeKey = '';
+function renderStore(force){
+  // while a patient is in the chair the store is closed, so ignore the ticking balance (avoids constant re-rendering)
+  const key = JSON.stringify([S.running ? 'busy' : S.money, S.up, S.inv, S.lives, S.running]);
+  if (!force && key===storeKey) return; storeKey = key;
+  $('store').classList.toggle('closed', S.running);
+  $('storeState').textContent = S.running ? 'CLOSED' : 'OPEN';
+  const ups = ITEMS.filter(i=>i.tag==='upgrade');
+  $('storeCount').textContent = `${ups.filter(i=>S.up[i.id]>0).length}/${ups.length} UNLOCKED`;
+  $('storeState').classList.toggle('open', !S.running);
+  const focused = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.id : null;
+  $('store').innerHTML = ITEMS.map(it=>{
+    const lv=owned(it), maxed = it.tag==='upgrade' ? lv>=it.max : it.id==='glove' && S.lives>=3;
+    const price = maxed ? null : cost(it,lv), cant = S.running || maxed || price>S.money;
+    const own = it.tag==='upgrade' ? (it.max>1 ? `Level ${lv} of ${it.max}` : lv?'Installed':'Not owned') : it.id==='glove' ? `${S.lives} of 3 fingers` : `You have ${lv}`;
+    const badge = it.tag==='upgrade' ? (lv ? (it.max>1 ? `${lv}/${it.max}` : '✓') : '') : it.id!=='glove' && lv ? '×'+lv : '';
+    const status = maxed ? (it.id==='glove'?'Full':'Unlocked') : '$'+price;
+    const owns = it.tag==='upgrade' && lv>0;
+    return `<button type="button" class="tile${maxed?' maxed':''}${owns?' owned':''}" data-id="${it.id}" aria-disabled="${cant}" aria-describedby="tip-${it.id}">
+      ${badge?`<span class="lvl">${badge}</span>`:''}<span class="ico">${ICONS[it.id]}</span><span class="sku">SKU ${String(ITEMS.indexOf(it)*37+1040)}</span><span class="tn">${SHORT[it.id]}</span>${owns && !maxed ? `<span class="unl">Unlocked</span>` : ''}<span class="tp">${owns && !maxed ? 'Next '+status : status}</span>
+      <span class="tip" role="tooltip" id="tip-${it.id}"><b>${it.name}</b>${it.desc}<em>${it.tag} · ${own}${S.running ? ' · buy between patients' : !maxed && price>S.money ? ` · need $${price-S.money} more`:''}</em></span></button>`;
+  }).join('');
+  if (focused){ const el=document.querySelector(`.tile[data-id="${focused}"]`); if (el) el.focus(); }
+}
+$('store').addEventListener('click', e=>{ const b=e.target.closest('.tile'); if (b) buy(b.dataset.id); });
+let nopeT = 0;
+function storeNope(){   // clicked the store mid-treatment: shake it and explain
+  const card = $('store').closest('.card'), msg = $('storeMsg');
+  card.classList.remove('nope'); void card.offsetWidth; card.classList.add('nope');
+  msg.textContent = 'You can only browse the store between patients.'; msg.classList.add('show');
+  clearTimeout(nopeT); nopeT = setTimeout(()=>msg.classList.remove('show'), 2600);
+}
+function buy(id){
+  const it=ITEMS.find(i=>i.id===id), lv=owned(it);
+  if (S.running){ storeNope(); return; }
+  if (it.tag==='upgrade' ? lv>=it.max : id==='glove' && S.lives>=3) return;
+  const price=cost(it,lv);
+  if (price>S.money){ note(`Can't afford ${it.name} yet ($${price}).`); return; }
+  S.money-=price;
+  if (it.tag==='upgrade') S.up[id]++; else if (id==='glove') S.lives=Math.min(3,S.lives+1); else S.inv[id]++;
+  note(`Bought: ${it.name} (−$${price}).`); updateHUD(); renderStore(true);
+  const el=document.querySelector(`.tile[data-id="${id}"]`); if (el){ el.classList.add('flash'); }
+}
+
+/* ---------- outcomes ---------- */
+function finish(){
+  S.running=false;
+  const bonus = Math.round(P.patience*0.8);
+  const penTot = P.pen.reduce((a,b)=>a+b.amt,0);
+  const special = P.wriggly ? P.bill.reduce((a,b)=>a+b.amt,0) : 0;
+  // satisfied patient: reputation grows, more for a calm patient, double on special stages
+  // experience is settled once per patient: a flat award for a satisfied patient, minus this visit's mistakes
+  const xpAward = XP_PER_PATIENT * (P.wriggly ? 2 : 1);
+  const repGain = Math.max(-REP_MAX - S.rep, Math.min(REP_MAX - S.rep, xpAward - P.repLoss));
+  S.rep += repGain;
+  if (repGain >= 0) renderRep(repGain || false); else { renderRep(); flashRep('loss'); }
+  const total = P.bill.reduce((a,b)=>a+b.amt,0) + special + bonus - penTot;
+  S.money += total + penTot; S.count++; S.idx++;   // penalties were already deducted live
+  say(rnd(['Thanks, doc!','I\'ll leave a five-star purr.','See you in six months.'])); Music.stinger('win'); PIX.happy = 30; pixSay('done');
+  updateHUD();
+  const net = total - P.shots*LA_COST - P.chairCost;   // anaesthetic and chair time were paid as you went; shown for the full picture
+  tally(total + penTot);
+  const rows = P.bill.map(b=>`<div><span>${b.code}</span><span>${b.name}</span><span>$${b.amt}</span></div>`).join('')
+    + (special ? `<div><span>—</span><span>Special stage: double fees</span><span>$${special}</span></div>` : '')
+    + `<div><span>—</span><span>Calm-patient bonus</span><span>$${bonus}</span></div>`
+    + (P.shots ? `<div class="pen"><span>—</span><span>Local anaesthetic ×${P.shots} (paid at chair)</span><span>−$${P.shots*LA_COST}</span></div>` : '')
+    + `<div class="pen"><span>—</span><span>Chair time ${fmtTime(P.chairTime)} (overheads)</span><span>−$${P.chairCost}</span></div>`
+    + `<div style="color:var(--lamp)"><span>XP</span><span>Satisfied patient${P.wriggly?' (special stage ×2)':''}</span><span>+${xpAward} XP</span></div>`
+    + (P.repLoss ? `<div class="pen"><span>XP</span><span>Mistakes this visit</span><span>−${P.repLoss} XP</span></div>` : '')
+    + P.pen.map(p=>`<div class="pen"><span>—</span><span>${p.name}</span><span>−$${p.amt}</span></div>`).join('')
+    + `<div class="tot ${net<0?'pen':''}"><span>${net<0?'Net loss':'Net for visit'}</span><span>${net<0?'−$'+(-net):'$'+net}</span></div>`;
+  showPanel(`${P.sp.nick} is all done.`, `<div class="invoice">${rows}</div><p>${S.money<0 ? `You're $${-S.money} in the red. The store won't serve you until you're back above $0.` : 'Spend your takings in the supply store on the right.'}</p>`, 'Call next patient', ()=>start());
+  note(`${P.sp.nick} discharged. Net ${net<0?'−$'+(-net):'$'+net}.`);
+}
+function chomp(){
+  S.running=false; S.lives--; S.idx++;
+  const lost = P.bill.reduce((a,b)=>a+b.amt,0);
+  S.money -= 75;
+  settleRepLoss(); tally(0); S.stats.hand += 75; S.stats.lost += lost;
+  const gap=$('gap'); gap.classList.add('snap'); gap.style.height='0px';
+  say('CHOMP!', true); shake(); updateHUD(); Music.stinger('lose'); PIX.chomp = 30; pixSay('chomp', true);
+  note(`${P.sp.nick} lost patience and bit down. Finger lost.`);
+  setTimeout(()=>{
+    gap.classList.remove('snap');
+    if (S.lives<=0) gameOver('Surgery closed.', 'Out of fingers.');
+    else showPanel(`CHOMP. ${P.sp.nick} stormed out.`, `<p>They walked out without paying for $${lost} of work. Chair time cost $${P.chairCost} (${fmtTime(P.chairTime)}) and the hand repair cost $75. You have ${S.lives} finger${S.lives===1?'':'s'} left. A bite block from the store would have saved that one.</p>`, 'Call next patient', ()=>start());
+  }, 700);
+}
+const SUE_AT = 200;   // penalties in one visit that make the patient walk out
+function walkout(){
+  S.running=false; S.idx++;
+  const lost = P.bill.reduce((a,b)=>a+b.amt,0), pens = P.pen.reduce((a,b)=>a+b.amt,0);
+  const xpLost = P.repLoss; settleRepLoss(); tally(0); S.stats.lost += lost;
+  say(rnd(["I'll see you in COURT!","My lawyer is a Bengal.","Expect a letter from my solicitor!"]), true);
+  pixSay('sue', true); oops(); shake(); Music.stinger('lose'); updateHUD();
+  note(`${P.sp.nick} walked out threatening legal action.`);
+  setTimeout(()=>showPanel(`${P.sp.nick} stormed out and is threatening to sue.`,
+    `<p>Your mistakes on this visit cost $${pens} and ${xpLost} XP, and chair time cost $${P.chairCost} (${fmtTime(P.chairTime)}). ${P.sp.nick} left without paying for $${lost} of work and has called a lawyer.</p><p>Patients walk out once a single visit racks up $${SUE_AT} in penalties.</p>`,
+    'Call next patient', ()=>start()), 700);
+}
+function gameOver(title, why){
+  let best=0; try{ best=+localStorage.getItem('dds-best')||0; if(S.money>best){localStorage.setItem('dds-best',S.money);} }catch(e){}
+  const rec = S.money>best ? 'A new practice record.' : `Practice record: $${best}.`;
+  const bal = S.money<0 ? `−$${-S.money}` : `$${S.money}`;
+  const st = S.stats, m = v => `$${v}`, row = (label, v, neg) => `<div class="${neg?'pen':''}"><span>—</span><span>${label}</span><span>${neg?'−':''}${m(v)}</span></div>`;
+  const score = `<div class="invoice">`
+    + row(`Fees collected (${S.count} patient${S.count===1?'':'s'})`, st.fees)
+    + row(`Chair time ${fmtTime(st.chairT)} (overheads)`, st.chair, true)
+    + row('Mistake penalties', st.pen, true)
+    + row('Local anaesthetic', st.la, true)
+    + (st.hand ? row('Hand repairs', st.hand, true) : '')
+    + (st.lost ? `<div><span>—</span><span>Unpaid work (walk-outs)</span><span>${m(st.lost)}</span></div>` : '')
+    + `<div class="tot ${S.money<0?'pen':''}"><span>Final balance</span><span>${bal}</span></div></div>`;
+  showPanel(title, `<p>${why} You ended as ${repLevel(S.rep).name} (${S.rep<0?'−'+(-S.rep):S.rep} XP).</p>${score}<p>${rec}</p>`, 'Reopen the surgery',
+    ()=>{const tool=S.tool; S=fresh(); S.tool=tool; $('log').innerHTML=''; updateHUD(); lastLevel=null; renderRep(); start();});
+}
+function showPanel(title, body, cta, fn){
+  const o=$('overlay');
+  o.innerHTML = `<div class="panel"><h3>${title}</h3>${body}<button class="btn" id="ovBtn">${cta}</button></div>`;
+  o.hidden=false; const b=$('ovBtn'); b.addEventListener('click', ()=>{ o.hidden=true; fn(); }); b.focus();
+}
+
+/* ---------- HUD ---------- */
+function updateHUD(){
+  $('money').textContent=(S.money<0?'−$'+(-S.money):'$'+S.money); $('money').classList.toggle('neg', S.money<0);
+  $('moneyLbl').textContent = S.money<0 ? 'In the red' : 'Takings'; $('count').textContent=S.count;
+  $('lives').textContent='♥'.repeat(Math.max(0,S.lives))+'♡'.repeat(3-Math.max(0,S.lives));
+  renderStore();
+  $('lollyN').textContent='×'+S.inv.lolly; $('tool-lolly').disabled = S.inv.lolly<=0;
+  if(!P) return;
+  $('pat').style.width=P.patience+'%'; $('patBar').classList.toggle('low', P.patience<35);
+  $('numb').style.width=(P.numb/P.numbMax*100)+'%';
+  const open = 40 + P.patience*1.25; if (S.running) $('gap').style.height=open+'px';
+  $('head').style.setProperty('--brow', (P.patience>65? -6 : P.patience>35 ? 8 : 22)+'deg');
+}
+function renderChart(){
+  const rows = P.teeth.filter(t=>t.problem).map(t=>{
+    const done = !RX[t.state];
+    const out = t.state==='gap' ? 'extracted' : t.state==='filled' ? 'restored' : t.fixed ? 'scaled'
+      : (t.state==='plaque' && P.sensitive ? 'numb + scale' : RX[t.state]);
+    return `<li class="${done?'done':''}"><span>${t.code}</span><span>${PROBLEM[t.problem]}</span><span class="rx">${out}</span></li>`;
+  });
+  $('chart').innerHTML = rows.join('') || '<li class="empty">No findings.</li>';
+}
+function note(s){ const l=$('log'); const d=document.createElement('span'); d.textContent=s; l.prepend(d); while(l.children.length>14) l.lastChild.remove(); }
+function say(s, pain){ const b=$('bubble'); b.textContent=s; b.classList.toggle('pain', !!pain); chatTimer=4; }
+function oops(){ const s=document.querySelector('.stage'); s.classList.remove('oops'); void s.offsetWidth; s.classList.add('oops'); }
+function shake(){ if(reduce) return; const h=$('head'); h.classList.remove('shake'); void h.offsetWidth; h.classList.add('shake'); }
+function floatText(ev, el, txt, color){
+  const stage=document.querySelector('.stage').getBoundingClientRect(), r=el.getBoundingClientRect();
+  const f=document.createElement('div'); f.className='float'; f.textContent=txt; f.style.color=color;
+  f.style.left=(r.left+r.width/2-stage.left)+'px'; f.style.top=(r.top-stage.top-6)+'px';
+  document.querySelector('.stage').appendChild(f); setTimeout(()=>f.remove(),1000);
+}
+
+/* ---------- loop ---------- */
+const SPECIAL_EVERY = 5;
+function isSpecial(i){ return (i+1) % SPECIAL_EVERY === 0; }
+function start(){
+  // roll this patient's modifiers once, so they can be announced before the patient sits down
+  if (S.rolled!==S.idx){ S.rolled = S.idx; S.nextSens = S.idx >= 2 && Math.random() < .3; }
+  const wrig = isSpecial(S.idx), sens = S.nextSens;
+  if ((wrig || sens) && S.announced!==S.idx){
+    S.announced = S.idx;
+    const wrigTxt = `<p>This patient can't keep still. Both jaws slide side to side, and they wriggle harder as they lose patience or you make mistakes. Every procedure pays <b style="color:var(--lamp)">double</b> if you get them done.</p>`;
+    const sensTxt = `<div class="warnrow"><span class="mini fang up s-plaque numbed" aria-hidden="true"><span class="t"></span></span><p><b style="color:var(--lamp)">Sensitive teeth.</b> Numb before scaling plaque. Scaling without anaesthetic hurts and counts as a no-LA complaint.</p></div>`;
+    const title = wrig && sens ? 'Special stage: a sensitive Wriggler.' : wrig ? 'Special stage: the Wriggler.' : 'Warning: sensitive patient.';
+    showPanel(title, (wrig ? wrigTxt : '') + (sens ? sensTxt : ''), 'Bring them in', ()=>start());
+    return;
+  }
+  newPatient(); S.running=true; last=performance.now(); updateHUD(); Music.start(); }
+function loop(now){
+  const dt=Math.min(.1,(now-last)/1000); last=now;
+  if (S.running && P){
+    // impatience snowballs: the lower patience gets, the faster it drains (up to 2.5× near zero)
+    P.patience -= P.drain * (1 + 1.5*(1 - P.patience/100)) * dt;
+    // chair time: surgery overheads tick away while the patient is in the chair
+    P.chairTime += dt; P.chairAcc += CHAIR_RATE*dt;
+    if (P.chairAcc >= 1){ const d=Math.floor(P.chairAcc); P.chairAcc-=d; P.chairCost+=d; S.money-=d; }
+    if (Math.floor(P.chairTime) !== P.chairShown){ P.chairShown = Math.floor(P.chairTime);
+      $('chair').textContent = `${fmtTime(P.chairTime)} · −$${P.chairCost}`;
+      if (P.chairShown>0 && P.chairShown % 5 === 0) floatText(null, $('chair'), `−$${CHAIR_RATE*5}`, 'var(--bad)'); }
+    if (P.numb>0){ P.numb=Math.max(0,P.numb-dt); if(!P.numb) { $('mouth').classList.remove('numb'); note('Anaesthetic wore off.'); } }
+    chatTimer-=dt;
+    if (chatTimer<=0){ say(P.patience<30 ? rnd(['Hurry UP.','I\'m getting hungry...','You have very soft hands.','*growls*']) : rnd(P.sp.chat)); chatTimer=5+Math.random()*3; }
+    $('head').style.setProperty('--px', (P.patience<35 ? 22 : 8+Math.sin(now/900)*6)+'px');
+    if (P.patience<=0 && S.inv.block>0){ S.inv.block--; P.patience=35; say('Mmmf! (bite block)', true); shake(); note('Bite block stopped a chomp.'); updateHUD(); }
+    else if (P.patience<=0){ P.patience=0; updateHUD(); chomp(); }
+    else updateHUD();
+  }
+  if (P && P.wriggly && S.running){
+    // jaws slide in opposite directions; worse when impatient or agitated
+    const t = now/1000, k = (1 + (100-P.patience)/80) * (P.agitation||1), ax = 26*k;
+    const up = Math.sin(t*1.9)*ax + Math.sin(t*5.1+1)*ax*.35;
+    const lo = Math.sin(t*1.6+2.4)*ax + Math.sin(t*4.4)*ax*.35;
+    $('upper').style.transform = `translateX(${up.toFixed(1)}px)`;
+    $('lower').style.transform = `translateX(${lo.toFixed(1)}px)`;
+    $('mouth').style.transform = `rotate(${(Math.sin(t*1.3)*2.2*k).toFixed(2)}deg) translateY(${(Math.sin(t*2.7)*4*k).toFixed(1)}px)`;
+  }
+  tickPix(now);
+  requestAnimationFrame(loop);
+}
+$('startBtn').addEventListener('click', ()=>{ $('overlay').hidden=true; start(); });
+
+// sample state behind the intro so the first frame shows a real patient
+newPatient(); updateHUD(); renderRep();
+requestAnimationFrame(loop);
+})();
+</script>
+
+</html>
